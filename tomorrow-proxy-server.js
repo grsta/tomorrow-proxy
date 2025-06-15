@@ -46,13 +46,17 @@ app.get('/weather', async (req, res) => {
       }
     );
 
-    const flat = tmrRes.data;
-    const result = flat.values[0];              // first datapoint
-    result.iconUrl = weatherIcons[result.weatherCode] || null;
+    // 👉 grab the single datapoint correctly
+const values = tmrRes.data.data.values;
 
-    return res.json([result]);                  // success → exit
+const result = {
+  temperature: values.temperature,
+  feelsLike:   values.temperatureApparent,
+  condition:   values.weatherCode,          // short code
+  weatherCode: values.weatherCode,
+  iconUrl:     weatherIcons[values.weatherCode] || null
+};
 
-  } catch (error) {
 
     // 2️⃣  Tomorrow.io hit a rate-limit (429) → fallback to OpenWeatherMap
     if (error.response?.status === 429) {
