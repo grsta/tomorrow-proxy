@@ -34,7 +34,6 @@ const weatherIcons = {
   7102: "https://yourcdn.com/icons/7102.png"
 };
 
-const API_KEY = 'lXFnAVn8p9WiNDhgjhG9tAvvy0Gf9aFDT';
 
 app.get('/weather', async (req, res) => {
   try {
@@ -52,13 +51,12 @@ app.get('/weather', async (req, res) => {
       }
     );
 
-   const flat = response.data;
-flat.iconUrl = weatherIcons[flat.values.weatherCode] || null;
-res.json(flat);
+ 
 
-
+const result = flat.values[0]; // first datapoint
 result.iconUrl = weatherIcons[result.weatherCode] || null;
-res.json([result]);
+res.json([result]); // send as array for Adalo compatibility
+
  
   } catch (error) {
     res
