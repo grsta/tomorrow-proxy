@@ -37,34 +37,58 @@ const weatherIcons = {
 
 app.get('/weather', async (req, res) => {
   try {
-    // latitude,longitude passed from Adalo (or default)
-    const location = req.query.location || '29.9511,-90.0715';
-
-    // ➜ KEY GOES IN THE QUERY STRING, not a header
-    const response = await axios.get(
+    // 1️⃣  Primary request – Tomorrow.io
+    const location = req.query.location || '29.9511,-90.0715'; // default NOLA
+    const tmrRes = await axios.get(
       'https://api.tomorrow.io/v4/weather/realtime',
       {
-        params: {
-          location,
-          apikey: process.env.API_KEY       // pulled from Render env var
-        }
+        params: { location, apikey: process.env.API_KEY }
       }
     );
 
- 
-const flat = response.data;
-const result = flat.values[0]; // first datapoint
-result.iconUrl = weatherIcons[result.weatherCode] || null;
-res.json([result]); // send as array for Adalo compatibility
+    const flat = tmrRes.data;
+    const result = flat.values[0];              // first datapoint
+    result.iconUrl = weatherIcons[result.weatherCode] || null;
 
- 
+    return res.json([result]);                  // success → exit
+
   } catch (error) {
-    res
-      .status(error.response?.status || 500)
-      .json({ error: error.response?.data || error.message });
+
+    // 2️⃣  Tomorrow.io hit a rate-limit (429) → fallback to OpenWeatherMap
+    if (error.response?.status === 429) {
+      try {
+        const [lat, lon] = (req.query.location || '29.9511,-90.0715').split(',');
+        const owmRes = await axios.get(
+          'https://api.openweathermap.org/data/2.5/weather',
+          {
+            params: {
+              lat,
+              lon,
+              appid: process.env.OWM_KEY,
+              units: 'imperial'           // use metric for °C
+            }
+          }
+        );
+
+        const data = owmRes.data;
+        const fallback = {
+          temperature: data.main.temp,
+          feelsLike:   data.main.feels_like,
+          condition:   data.weather[0].description,
+          weatherCode: data.weather[0].id,
+          iconUrl:     `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`
+        };
+
+        return res.json([fallback]);          // send same array shape
+
+      } catch (owmErr) {
+        return res.status(owmErr.response?.status || 500)
+                  .json({ error: owmErr.message });
+      }
+    }
+
+    // 3️⃣  Any other Tomorrow.io error
+    return res.status(error.response?.status || 500)
+              .json({ error: error.message });
   }
 });
-
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Proxy running on port ${PORT}`));
