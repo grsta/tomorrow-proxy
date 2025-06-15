@@ -53,7 +53,9 @@ app.get('/weather', async (req, res) => {
     );
 
     // Return ONLY the values object (flat JSON for Adalo)
-  const result = response.data.values[0];
+ console.log('Full API response:', response.data);
+res.json(response.data);
+
 result.iconUrl = weatherIcons[result.weatherCode] || null;
 res.json([result]);
  
