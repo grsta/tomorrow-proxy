@@ -52,7 +52,7 @@ app.get('/weather', async (req, res) => {
     );
 
  
-
+const flat = response.data;
 const result = flat.values[0]; // first datapoint
 result.iconUrl = weatherIcons[result.weatherCode] || null;
 res.json([result]); // send as array for Adalo compatibility
