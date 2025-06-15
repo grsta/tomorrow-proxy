@@ -25,7 +25,7 @@ app.get('/weather', async (req, res) => {
     );
 
     // Return ONLY the values object (flat JSON for Adalo)
-    res.json(response.data.data.values);
+    res.json([response.data.data.values]);
   } catch (error) {
     res
       .status(error.response?.status || 500)
