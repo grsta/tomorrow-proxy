@@ -1,27 +1,27 @@
 
 const express = require("express");
 const axios = require("axios");
-const cors = require("cors");
 require("dotenv").config();
 
 const app = express();
-app.use(cors());
 const PORT = process.env.PORT || 10000;
 
-// Predefined icon mapping for common Tomorrow.io weather codes
 const weatherIcons = {
   1000: "https://openweathermap.org/img/wn/01d@2x.png", // Clear
   1100: "https://openweathermap.org/img/wn/02d@2x.png", // Mostly Clear
   1101: "https://openweathermap.org/img/wn/03d@2x.png", // Partly Cloudy
   1102: "https://openweathermap.org/img/wn/04d@2x.png", // Mostly Cloudy
-  4000: "https://openweathermap.org/img/wn/10d@2x.png", // Drizzle
-  4001: "https://openweathermap.org/img/wn/09d@2x.png", // Rain
+  1001: "https://openweathermap.org/img/wn/04d@2x.png", // Cloudy
+  2000: "https://openweathermap.org/img/wn/50d@2x.png", // Fog
+  4000: "https://openweathermap.org/img/wn/09d@2x.png", // Drizzle
   4200: "https://openweathermap.org/img/wn/10d@2x.png", // Light Rain
+  4001: "https://openweathermap.org/img/wn/10d@2x.png", // Rain
   4201: "https://openweathermap.org/img/wn/09d@2x.png", // Heavy Rain
   5001: "https://openweathermap.org/img/wn/13d@2x.png", // Flurries
   5100: "https://openweathermap.org/img/wn/13d@2x.png", // Light Snow
+  5000: "https://openweathermap.org/img/wn/13d@2x.png", // Snow
   5101: "https://openweathermap.org/img/wn/13d@2x.png", // Heavy Snow
-  8000: "https://openweathermap.org/img/wn/11d@2x.png"  // Thunderstorm
+  8000: "https://openweathermap.org/img/wn/11d@2x.png", // Thunderstorm
 };
 
 app.get("/weather", async (req, res) => {
@@ -37,8 +37,8 @@ app.get("/weather", async (req, res) => {
         apikey: process.env.TOMORROW_API_KEY,
         timesteps: "1h",
         fields: ["temperature", "temperatureApparent", "weatherCode"],
-        units: "imperial"
-      }
+        units: "imperial",
+      },
     });
 
     const result = response.data.timelines.hourly[0].values;
