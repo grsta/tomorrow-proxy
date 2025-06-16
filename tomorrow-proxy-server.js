@@ -42,7 +42,8 @@ app.get("/weather", async (req, res) => {
     });
 
     const result = response.data.timelines.hourly[0].values;
-    result.iconUrl = weatherIcons[result.weatherCode] || null;
+    result.iconUrl = weatherIcons[result.weatherCode] || "https://openweathermap.org/img/wn/01d@2x.png";
+
 
     res.json([result]);
   } catch (error) {
