@@ -11,7 +11,7 @@ const weatherIcons = {
   1100: "https://openweathermap.org/img/wn/02d@2x.png", // Mostly Clear
   1101: "https://openweathermap.org/img/wn/03d@2x.png", // Partly Cloudy
   1102: "https://openweathermap.org/img/wn/04d@2x.png", // Mostly Cloudy
-  1001: "https://openweathermap.org/img/wn/04d@2x.png", // Cloudy
+  1001: "https://res.cloudinary.com/dqfoiq9zh/video/upload/cloudy.mp4", // Cloudy
   2000: "https://openweathermap.org/img/wn/50d@2x.png", // Fog
   4000: "https://openweathermap.org/img/wn/09d@2x.png", // Drizzle
   4200: "https://openweathermap.org/img/wn/10d@2x.png", // Light Rain
