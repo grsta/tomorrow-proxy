@@ -42,6 +42,8 @@ app.get("/weather", async (req, res) => {
     });
 
     const result = response.data.timelines.hourly[0].values;
+    result.weatherCode = 1001; // Change to 4200 for Rain, 8000 for Thunderstorm, etc.
+
     result.iconUrl = weatherIcons[result.weatherCode] || "https://openweathermap.org/img/wn/01d@2x.png";
 
 
