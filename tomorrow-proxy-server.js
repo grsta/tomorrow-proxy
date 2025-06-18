@@ -51,7 +51,8 @@ app.get("/weather", async (req, res) => {
     const response = await axios.get(apiURL, {
       params: {
         location: `${lat},${lon}`,
-        fields: ["temperature", "temperatureApparent", "weatherCode"],
+       fields: ["temperature", "temperatureApparent", "weatherCode", "humidity", "windSpeed"],
+
         timesteps: ["current"],
         units: "imperial",
         apikey: process.env.TOMORROW_API_KEY
@@ -63,12 +64,17 @@ app.get("/weather", async (req, res) => {
     const weatherCode = values.weatherCode;
 
     // Shape the JSON exactly how Adalo expects it
-    res.json([{
-      temperature : Math.round(values.temperature),
-      feelsLike   : Math.round(values.temperatureApparent),
-      weatherCode,
-      iconUrl     : weatherIcons[weatherCode] || null
-    }]);
+   res.json([
+  {
+    temperature : Math.round(values.temperature),
+    feelsLike   : Math.round(values.temperatureApparent),
+    weatherCode,
+    humidity    : Math.round(values.humidity),
+    windSpeed   : Math.round(values.windSpeed),
+    iconUrl     : weatherIcons[weatherCode] || null
+  }
+]);
+
   } catch (err) {
     console.error("Tomorrow.io error:", err.message);
     res.status(500).json({ error: "Failed to fetch weather data" });
