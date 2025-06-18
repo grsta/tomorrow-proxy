@@ -46,7 +46,7 @@ const weatherIcons = {
   8000: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Thunderstorm_zu58xq.mp4",           // Thunderstorm
   5002: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226626/Thundersnow_tx2ae5.mp4",            // Thundersnow (custom)
   5003: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226624/Thundersnow_Wind_onvm7v.mp4",       // Thundersnow + Wind (custom)
-  3002: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226591/Dry_Lightning_qcgmuh.mp4"           // Dry Lightning (custom)
+  3002: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226591/Dry_Lightning_qcgmuh.mp4",           // Dry Lightning (custom)
   "night": "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226601/Night_sykp1o.mp4"
 
 };
