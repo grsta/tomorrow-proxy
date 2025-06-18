@@ -63,12 +63,12 @@ app.get("/weather", async (req, res) => {
     const weatherCode = values.weatherCode;
 
     // Shape the JSON exactly how Adalo expects it
-    res.json({
+    res.json([{
       temperature : Math.round(values.temperature),
       feelsLike   : Math.round(values.temperatureApparent),
       weatherCode,
       iconUrl     : weatherIcons[weatherCode] || null
-    });
+    }]);
   } catch (err) {
     console.error("Tomorrow.io error:", err.message);
     res.status(500).json({ error: "Failed to fetch weather data" });
