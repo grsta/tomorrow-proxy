@@ -95,14 +95,14 @@ if (isNight && (weatherCode === 1000 || weatherCode === 1100)) {
 }
 
 // Send response
-res.json({
+res.json([{
   temperature: Math.round(values.temperature),
   feelsLike: Math.round(values.temperatureApparent),
   weatherCode,
   humidity: Math.round(values.humidity),
   windSpeed: Math.round(values.windSpeed),
   iconUrl
-});
+}]);
 
   } catch (err) {
     console.error("Tomorrow.io error:", err.message);
