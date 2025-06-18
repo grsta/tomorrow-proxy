@@ -47,6 +47,8 @@ const weatherIcons = {
   5002: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226626/Thundersnow_tx2ae5.mp4",            // Thundersnow (custom)
   5003: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226624/Thundersnow_Wind_onvm7v.mp4",       // Thundersnow + Wind (custom)
   3002: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226591/Dry_Lightning_qcgmuh.mp4"           // Dry Lightning (custom)
+  "night": "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226601/Night_sykp1o.mp4"
+
 };
 
 
@@ -76,20 +78,31 @@ app.get("/weather", async (req, res) => {
     });
 
     // Drill down to current values
-    const values = response.data.data.timelines[0].intervals[0].values;
-    const weatherCode = values.weatherCode;
+   // Drill down to current values
+const values = response.data.data.timelines[0].intervals[0].values;
+const weatherCode = values.weatherCode;
 
-    // Shape the JSON exactly how Adalo expects it
-   res.json([
-  {
-    temperature : Math.round(values.temperature),
-    feelsLike   : Math.round(values.temperatureApparent),
-    weatherCode,
-    humidity    : Math.round(values.humidity),
-    windSpeed   : Math.round(values.windSpeed),
-    iconUrl     : weatherIcons[weatherCode] || null
-  }
-]);
+// Determine if it's night (local server time)
+const currentHour = new Date().getHours();
+const isNight = currentHour < 6 || currentHour >= 18;
+
+// Choose icon, override with night icon if applicable
+let iconUrl = weatherIcons[weatherCode];
+
+// Override icon if night and clear/mostly clear
+if (isNight && (weatherCode === 1000 || weatherCode === 1100)) {
+  iconUrl = weatherIcons["night"];
+}
+
+// Send response
+res.json({
+  temperature: Math.round(values.temperature),
+  feelsLike: Math.round(values.temperatureApparent),
+  weatherCode,
+  humidity: Math.round(values.humidity),
+  windSpeed: Math.round(values.windSpeed),
+  iconUrl
+});
 
   } catch (err) {
     console.error("Tomorrow.io error:", err.message);
