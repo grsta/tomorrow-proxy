@@ -99,17 +99,18 @@ app.get('/weather', async (req, res) => {
       iconUrl = weatherIcons['night'];
     }
 
-    cachedWeather = {
-      updated_at: new Date().toISOString(),
-      temperature: Math.round(values.temperature),
-      feelslike: Math.round(values.temperatureApparent),
-      weatherCode,
-      humidity: Math.round(values.humidity),
-      windSpeed: Math.round(values.windSpeed),
-      iconUrl
-    };
+    return res.json({
+    result: {
+        updated_at: new Date().toISOString(),
+        temperature: Math.round(values.temperature),
+        feelslike: Math.round(values.temperatureApparent),
+        weatherCode,
+        humidity: Math.round(values.humidity),
+        windspeed: Math.round(values.windSpeed),
+        iconUrl
+    }
+});
 
-    lastFetched = now;
 
     return res.json(cachedWeather);
 
