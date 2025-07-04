@@ -10,42 +10,41 @@ app.use(cors());
 // -------------------------------
 const weatherIcons = {
   // CLEAR / CLOUDS
-  1000: "https://res.cloudinary.com/defdqhshh/video/upload/v1722266111/Clear_vb05.mp4",         // Clear
-  1100: "https://res.cloudinary.com/defdqhshh/video/upload/v1722266171/Mostly_Clear_ur4ob0.mp4", // Mostly Clear
-  1101: "https://res.cloudinary.com/defdqhshh/video/upload/v1722266137/Partly_Cloudy_nubtcn.mp4", // Partly Cloudy
-  1102: "https://res.cloudinary.com/defdqhshh/video/upload/v1722266154/Mostly_Cloudy_yudshn.mp4", // Mostly Cloudy
-  1001: "https://res.cloudinary.com/defdqhshh/video/upload/v1722266124/Cloudy_eztp9f.mp4",        // Cloudy
+  1000: "https://res.cloudinary.com/defqishvh/video/upload/v172266511/Clear_vb05.mp4",             // Clear
+  1100: "https://res.cloudinary.com/defqishvh/video/upload/v172266511/Mostly_Clear_ur4do.mp4",     // Mostly Clear
+  1101: "https://res.cloudinary.com/defqishvh/video/upload/v172266511/Partly_Cloudy_ruhmbt.mp4",   // Partly Cloudy
+  1102: "https://res.cloudinary.com/defqishvh/video/upload/v172266511/Mostly_Cloudy_xuhdmh.mp4",   // Mostly Cloudy
+  1103: "https://res.cloudinary.com/defqishvh/video/upload/v172266511/Cloudy_yrb8sf.mp4",          // Cloudy
 
   // FOG / HAZE
-  2100: "https://res.cloudinary.com/defdqhshh/video/upload/v1722266181/Fog_Windy_Snow_mr6cfb.mp4", 
-  2000: "https://res.cloudinary.com/defdqhshh/video/upload/v1722266205/Light_Fog_Dreary_krjjlp.mp4",
+  2000: "https://res.cloudinary.com/defqishvh/video/upload/v172266511/Fog_Windy_Snow_nwcf6b.mp4",
+  2100: "https://res.cloudinary.com/defqishvh/video/upload/v172266511/Light_Fog_Dreary_krfj1b.mp4",
 
   // RAIN
-  4200: "https://res.cloudinary.com/defdqhshh/video/upload/v1722266191/Drizzle_kyltib.mp4",
-  4000: "https://res.cloudinary.com/defdqhshh/video/upload/v1722266187/Light_Rain_sy4syl.mp4",
-  4201: "https://res.cloudinary.com/defdqhshh/video/upload/v1722266198/Heavy_Rain_zgxqph.mp4",
+  4000: "https://res.cloudinary.com/defqishvh/video/upload/v172266511/Drizzle_slyvl1.mp4",
+  4200: "https://res.cloudinary.com/defqishvh/video/upload/v172266511/Light_Rain_p5xl4v.mp4",
+  4201: "https://res.cloudinary.com/defqishvh/video/upload/v172266511/Heavy_Rain_eqsaph.mp4",
 
   // SNOW / MIX
-  5000: "https://res.cloudinary.com/defdqhshh/video/upload/v1722266213/Snow_uqvxx4.mp4",
-  5100: "https://res.cloudinary.com/defdqhshh/video/upload/v1722266225/Flurries_wlymwp.mp4",
-  5001: "https://res.cloudinary.com/defdqhshh/video/upload/v1722266233/Light_Snow_gklhck.mp4",
-  5101: "https://res.cloudinary.com/defdqhshh/video/upload/v1722266243/Freezing_Drizzle_Mix_kyktdb.mp4",
-  5110: "https://res.cloudinary.com/defdqhshh/video/upload/v1722266254/Heavy_Freezing_Rain_377gfp.mp4",
+  5000: "https://res.cloudinary.com/defqishvh/video/upload/v172266511/Snow_pkrdcb.mp4",
+  5100: "https://res.cloudinary.com/defqishvh/video/upload/v172266511/Light_Snow_xrh1kc.mp4",
+  5101: "https://res.cloudinary.com/defqishvh/video/upload/v172266511/Heavy_Snow_Freezing_Rain_37r7ge.mp4",
 
   // ICE PELLETS / HAIL
-  7000: "https://res.cloudinary.com/defdqhshh/video/upload/v1722266264/Ice_Pellets_refuzc.mp4",
-  7101: "https://res.cloudinary.com/defdqhshh/video/upload/v1722266271/Heavy_Ice_Pellets_wlymwp.mp4",
-  7102: "https://res.cloudinary.com/defdqhshh/video/upload/v1722266278/Light_Freezing_Rain_p7fjqk.mp4",
+  7000: "https://res.cloudinary.com/defqishvh/video/upload/v172266511/Ice_Pellets_ref62.mp4",
+  7101: "https://res.cloudinary.com/defqishvh/video/upload/v172266511/Heavy_Ice_Pellets_uhxwps.mp4",
+  7102: "https://res.cloudinary.com/defqishvh/video/upload/v172266511/Light_Freezing_Rain_nfj7qf.mp4",
 
   // THUNDERSTORMS & EXTREMES
-  8000: "https://res.cloudinary.com/defdqhshh/video/upload/v1722266284/Thunderstorm_s6fhcb.mp4",
-  8001: "https://res.cloudinary.com/defdqhshh/video/upload/v1722266291/Thunderstorm_Custom_blizam.mp4",
-  8002: "https://res.cloudinary.com/defdqhshh/video/upload/v1722266298/Thunderstorm_Kindi_vy2djo.mp4",
-  8003: "https://res.cloudinary.com/defdqhshh/video/upload/v1722266305/Dry_Lightning_Custom_vzkgpo.mp4"
+  8000: "https://res.cloudinary.com/defqishvh/video/upload/v172266511/Thunderstorm_9chfdo.mp4",
+  8001: "https://res.cloudinary.com/defqishvh/video/upload/v172266511/Thunderstorm_Custom_bliznm.mp4",
+  8002: "https://res.cloudinary.com/defqishvh/video/upload/v172266511/Thunderstorm_Kind_vzj96u.mp4",
+  8003: "https://res.cloudinary.com/defqishvh/video/upload/v172266511/Dry_Lightning_Custom_vxj9qo.mp4"
 };
 
-// fallback icon
-const defaultIconUrl = "https://res.cloudinary.com/defdqhshh/video/upload/v1722266111/Clear_vb05.mp4";
+// Fallback icon
+const defaultIconUrl = "https://res.cloudinary.com/defqishvh/video/upload/v172266511/Clear_vb05.mp4";
+
 
 // -------------------------------
 // Weather Route
