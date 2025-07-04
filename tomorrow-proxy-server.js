@@ -68,7 +68,7 @@ app.get("/weather", async (req, res) => {
     const weatherData = response.data;
 
     const temperature = weatherData?.data?.values?.temperature;
-    const feelslike = weatherData.data.values.temperatureApparent ?? weatherData.data.values.temperature;
+    const feelslike = weatherData.data.values.temperatureApparent ?? null;
 
     const weatherCode = weatherData?.data?.values?.weatherCode;
 
