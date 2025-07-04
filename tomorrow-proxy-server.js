@@ -112,7 +112,7 @@ app.get('/weather', async (req, res) => {
 }]);
 
 
-    return res.json(cachedWeather);
+    return res.json(weatherObject);
 
   } catch (err) {
     console.error("Tomorrow.io error:", err.message);
