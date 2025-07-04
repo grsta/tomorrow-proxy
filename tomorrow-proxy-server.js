@@ -64,12 +64,12 @@ app.get("/weather", async (req, res) => {
     // Pull video URL for this weather code
     const iconUrl = weatherIcons[weatherCode] || "";
 
-    res.json({
+    res.json([{
       temperature,
       feelslike: feelsLike,
       condition: weatherCode,
       iconUrl
-    });
+    }]);
 
   } catch (error) {
     console.error("Tomorrow.io error:", error.response?.data || error.message);
