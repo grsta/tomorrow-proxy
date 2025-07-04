@@ -77,7 +77,14 @@ app.get("/weather", async (req, res) => {
     }
 
     // Pull video URL for this weather code
-    const iconUrl = weatherIcons[weatherCode] || defaultIconUrl;
+   const iconUrl = "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722662014/Cloudy_vzb0kt.mp4";
+
+res.json({
+  temperature,
+  feelslike,
+  condition,
+  iconUrl
+});
 
 
     res.json([{
