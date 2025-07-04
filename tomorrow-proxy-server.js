@@ -60,12 +60,12 @@ app.get("/weather", async (req, res) => {
 
     const iconUrl = weatherVideos[weatherCode] || null;
 
-    res.json({
+    res.json([{
       temperature,
       feelLike,
       condition: weatherCode,
       iconUrl
-    });
+    }]);
 
   } catch (error) {
     console.error("Error fetching weather:", error.message);
