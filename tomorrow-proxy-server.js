@@ -80,12 +80,12 @@ app.get("/weather", async (req, res) => {
     const iconUrl = weatherIcons[weatherCode] || defaultIconUrl;
 
 
-    res.json([{
+    res.json({
       temperature,
       feelslike: feelsLike,
       condition: weatherCode,
       iconUrl
-    }]);
+    });
 
   } catch (error) {
     console.error("Tomorrow.io error:", error.response?.data || error.message);
