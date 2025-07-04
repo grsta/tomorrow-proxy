@@ -118,3 +118,7 @@ app.get('/weather', async (req, res) => {
     return res.status(500).json({ error: "Failed to fetch weather data." });
   }
 });
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Weather proxy running on port ${PORT}`);
+});
