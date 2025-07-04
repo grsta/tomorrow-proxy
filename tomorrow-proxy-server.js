@@ -55,27 +55,7 @@ app.get("/weather", async (req, res) => {
     return res.status(400).json({ error: "Missing lat or lon query params." });
   }
 
-  try {
-    console.log(`Fetching weather data for lat=${lat}, lon=${lon}`);
-
-    const response = await axios.get("https://api.tomorrow.io/v4/weather/realtime", {
-      params: {
-        location: `${lat},${lon}`,
-        apikey: process.env.TOMORROW_API_KEY
-      }
-    });
-
-    const weatherData = response.data;
-
-    const temperature = weatherData?.data?.values?.temperature;
-    const feelslike = weatherData.data.values.temperatureApparent ?? null;
-
-    const weatherCode = weatherData?.data?.values?.weatherCode;
-
-    if (temperature === undefined) {
-      console.error("Tomorrow.io returned no temperature!");
-      return res.json({ error: "Failed to fetch weather data." });
-    }
+ 
 
     // Pull video URL for this weather code
    const iconUrl = "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722662014/Cloudy_vzb0kt.mp4";
