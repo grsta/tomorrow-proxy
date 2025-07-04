@@ -39,55 +39,45 @@ const weatherIcons = {
   8003: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722668231/Dry_Lightning_Custom_xbkqwp.mp4"    // Dry Lightning (custom)
 };
 
-const defaultIconUrl = "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722668232/Default_Clouds_Sun_smokno.mp4";
-
-
-const app = express();
-const port = process.env.PORT || 10000;
-
-app.use(cors());
+const defaultIconUrl = "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722666122/Pellet_Clouds_Sun_smxmko.mp4";
 
 app.get("/weather", async (req, res) => {
   const lat = req.query.lat;
   const lon = req.query.lon;
 
   if (!lat || !lon) {
-    return res.status(400).json({ error: "Missing lat or lon query params." });
+    return res.json({ error: "Missing lat or lon query params." });
   }
 
- 
+  try {
+    console.log(`Fetching weather data for lat=${lat}, lon=${lon}`);
 
-    // Pull video URL for this weather code
-   try {
-  console.log(`Fetching weather data for lat=${lat}, lon=${lon}`);
+    const response = await axios.get("https://api.tomorrow.io/v4/weather/realtime", {
+      params: {
+        location: `${lat},${lon}`,
+        apikey: process.env.TOMORROW_API_KEY
+      }
+    });
 
-  const response = await axios.get("https://api.tomorrow.io/v4/weather/realtime", {
-    params: {
-      location: `${lat},${lon}`,
-      apikey: process.env.TOMORROW_API_KEY
-    }
-  });
+    const weatherData = response.data;
 
-  const weatherData = response.data;
+    const temperature = weatherData?.data?.values?.temperature ?? null;
+    const feelslike = weatherData?.data?.values?.temperatureApparent ?? null;
+    const weatherCode = weatherData?.data?.values?.weatherCode ?? null;
 
-  const temperature = weatherData.data.values.temperature ?? null;
-  const feelslike = weatherData.data.values.temperatureApparent ?? null;
-  const weatherCode = weatherData.data.values.weatherCode ?? null;
+    // Lookup icon for this weatherCode
+    const iconUrl = weatherIcons[weatherCode] || defaultIconUrl;
 
-  const iconUrl = "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722662014/Cloudy_vz9b8t.mp4";
+    res.json({
+      temperature,
+      feelslike,
+      condition: weatherCode,
+      iconUrl
+    });
 
-  res.json({
-    temperature,
-    feelslike,
-    condition: weatherCode,
-    iconUrl
-  });
-
-} catch (error) {
-  console.error("Tomorrow.io error:", error.response?.data || error.message);
-  res.json({ error: "Failed to fetch weather data." });
-}
-
+  } catch (error) {
+    console.error("Tomorrow.io error:", error.response?.data || error.message);
+    res.json({ error: "Failed to fetch weather data." });
   }
 });
 
