@@ -99,8 +99,7 @@ app.get('/weather', async (req, res) => {
       iconUrl = weatherIcons['night'];
     }
 
-    return res.json([{
-    result: {
+    return res.json({
         updated_at: new Date().toISOString(),
         temperature: Math.round(values.temperature),
         feelslike: Math.round(values.temperatureApparent),
@@ -109,7 +108,7 @@ app.get('/weather', async (req, res) => {
         windspeed: Math.round(values.windSpeed),
         iconUrl
     }
-}]);
+});
 
 
     return res.json(weatherObject);
