@@ -4,28 +4,43 @@ const axios = require("axios");
 const cors = require("cors");
 
 const weatherIcons = {
-  1000: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722868741/Sun_Sunny_pfufio.mp4",        // Clear
-  1100: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722868741/Sun_Mostly_Clear_uhudn4.mp4",  // Mostly Clear
-  1101: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722868741/Sun_Partly_Cloudy_v8s6md.mp4", // Partly Cloudy
-  1102: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722868741/Sun_Cloudy_sx0mto.mp4",        // Cloudy
-  2000: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722868510/Fog_Windy_Snow_vucdt5.mp4",    // Fog / Windy Snow
-  2100: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722868510/Fog_Light_Fog_Dreary_p6t1mp.mp4", // Light Fog / Dreary
-  4000: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722868613/Rain_Drizzle_jsqytr.mp4",      // Drizzle
-  4200: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722868613/Rain_Light_Rain_sqylsh.mp4",   // Light Rain
-  4001: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722868613/Rain_Rain_jsqytr.mp4",         // Rain
-  4201: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722868613/Rain_Heavy_Convective_Rain_gashm9.mp4", // Heavy Rain
-  5000: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722868675/Snow_Snow_vqkxmp.mp4",         // Snow
-  5100: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722868675/Snow_Flurries_mlnntj.mp4",     // Flurries
-  5101: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722868675/Snow_Heavy_Snow_zk7qpe.mp4",   // Heavy Snow
-  6000: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722868613/Rain_Freezing_Drizzle_37t6tr.mp4", // Freezing Drizzle
-  6001: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722868613/Rain_Freezing_Rain_oxpmeh.mp4", // Freezing Rain
-  6200: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722868613/Rain_Light_Freezing_Rain_xhcbde.mp4", // Light Freezing Rain
-  6201: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722868675/Snow_Heavy_Precipitation_Sun_sx0mto.mp4", // Heavy Freezing Rain
-  7000: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722868741/Sun_Ice_Pellets_sasexr.mp4",   // Ice Pellets
-  7101: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722868741/Sun_Heavy_Ice_Pellets_iybndk.mp4", // Heavy Ice Pellets
-  7102: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722868741/Sun_Light_Ice_Pellets_vjz5qm.mp4", // Light Ice Pellets
-  8000: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722868741/Sun_Thunderstorm_g5rblv.mp4"  // Thunderstorm
+  // CLEAR / CLOUDS
+  1000: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722668210/Clear_s6ljy6.mp4",                    // Clear
+  1100: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722668211/Mostly_Clear_uxfqlo.mp4",             // Mostly Clear
+  1101: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722668212/Partly_Cloudy_nuhobm.mp4",            // Partly Cloudy
+  1102: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722668213/Mostly_Cloudy_iyadhm.mp4",            // Mostly Cloudy
+  1001: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722668214/Cloudy_vzb0kt.mp4",                   // Cloudy
+
+  // FOG / HAZE
+  2000: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722668215/Fog_Windy_Snow_nvcf6t.mp4",           // Fog / Windy Snow
+  2100: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722668216/Light_Fog_Dreary_kzjjjo.mp4",         // Light Fog / Dreary
+
+  // DRIZZLE / RAIN
+  4000: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722668217/Drizzle_yg5l3u.mp4",                  // Drizzle
+  4200: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722668218/Light_Rain_9s4iyt.mp4",               // Light Rain
+  4201: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722668219/Heavy_Rain_gscsgh.mp4",               // Heavy Rain
+
+  // SNOW / MIX
+  5000: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722668220/Snow_vpb9ej.mp4",                     // Snow
+  5100: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722668221/Flurries_k57ewq.mp4",                 // Flurries
+  5101: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722668222/Light_Snow_o5zmp4.mp4",               // Light Snow
+  5001: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722668223/Mix_1lmzpe.mp4",                      // Freezing Drizzle / Mix
+  7102: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722668224/Heavy_Freezing_Rain_377fgt.mp4",      // Heavy Freezing Rain
+
+  // ICE PELLETS / HAIL
+  7000: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722668225/Ice_Pellets_r4zswx.mp4",             // Ice Pellets
+  7101: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722668226/Heavy_Ice_Pellets_xh6ymn.mp4",       // Heavy Ice Pellets
+  7110: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722668227/Light_Freezing_Rain_nkl7b4.mp4",     // Light Freezing Rain
+
+  // THUNDERSTORMS & EXTREMES
+  8000: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722668228/Thunderstorm_suhfox.mp4",           // Thunderstorm
+  8001: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722668229/Thunderstorm_Custom_lb1zzh.mp4",    // Thunderstorm (custom)
+  8002: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722668230/Thundersnow_Custom_rvyqjo.mp4",     // Thundersnow + Wind (custom)
+  8003: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722668231/Dry_Lightning_Custom_xbkqwp.mp4"    // Dry Lightning (custom)
 };
+
+const defaultIconUrl = "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722668232/Default_Clouds_Sun_smokno.mp4";
+
 
 const app = express();
 const port = process.env.PORT || 10000;
@@ -62,7 +77,8 @@ app.get("/weather", async (req, res) => {
     }
 
     // Pull video URL for this weather code
-    const iconUrl = weatherIcons[weatherCode] || "";
+    const iconUrl = weatherIcons[weatherCode] || defaultIconUrl;
+
 
     res.json([{
       temperature,
