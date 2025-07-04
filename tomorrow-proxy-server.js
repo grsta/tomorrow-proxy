@@ -57,59 +57,64 @@ const weatherIcons = {
  * GET /weather?lat=<number>&lon=<number>
  * Returns: { temperature, feelsLike, weatherCode, iconUrl }
  */
-app.get("/weather", async (req, res) => {
+let cachedWeather = null;
+let lastFetched = null;
+
+app.get('/weather', async (req, res) => {
   const { lat, lon } = req.query;
+
   if (!lat || !lon) {
-    return res.status(400).json({ error: "Missing lat or lon query params" });
+    return res.status(400).json({ error: "Missing lat or lon query params." });
+  }
+
+  const now = Date.now();
+  const cacheDuration = 15 * 60 * 1000; // 15 minutes
+
+  if (cachedWeather && (now - lastFetched < cacheDuration)) {
+    console.log("Serving cached weather data...");
+    return res.json(cachedWeather);
   }
 
   try {
-    // Tomorrow.io Timelines - current snapshot
-    const apiURL = "https://api.tomorrow.io/v4/timelines";
-    const response = await axios.get(apiURL, {
+    console.log("Fetching fresh weather data...");
+
+    const url = 'https://api.tomorrow.io/v4/weather/realtime';
+    const response = await axios.get(url, {
       params: {
         location: `${lat},${lon}`,
-       fields: ["temperature", "temperatureApparent", "weatherCode", "humidity", "windSpeed"],
-
-        timesteps: ["current"],
-        units: "imperial",
-        apikey: process.env.TOMORROW_API_KEY
+        apikey: process.env.TOMORROW_API_KEY,
+        fields: ['temperature', 'temperatureApparent', 'weatherCode', 'humidity', 'windSpeed']
       }
     });
 
-    // Drill down to current values
-   // Drill down to current values
-const values = response.data.data.timelines[0].intervals[0].values;
-const weatherCode = values.weatherCode;
+    const values = response.data.data.values;
+    const weatherCode = values.weatherCode;
 
-// Determine if it's night (local server time)
-const currentHour = new Date().getHours();
-const isNight = currentHour < 6 || currentHour >= 18;
+    const currentHour = new Date().getHours();
+    const isNight = currentHour < 6 || currentHour > 18;
 
-// Choose icon, override with night icon if applicable
-let iconUrl = weatherIcons[weatherCode];
+    let iconUrl = weatherIcons[weatherCode] || null;
 
-// Override icon if night and clear/mostly clear
-if (isNight && (weatherCode === 1000 || weatherCode === 1100)) {
-  iconUrl = weatherIcons["night"];
-}
+    if (isNight && (weatherCode === 1000 || weatherCode === 1100)) {
+      iconUrl = weatherIcons['night'];
+    }
 
-// Send response
-res.json([{
-  temperature: Math.round(values.temperature),
-  feelsLike: Math.round(values.temperatureApparent),
-  weatherCode,
-  humidity: Math.round(values.humidity),
-  windSpeed: Math.round(values.windSpeed),
-  iconUrl
-}]);
+    cachedWeather = {
+      updated_at: new Date().toISOString(),
+      temperature: Math.round(values.temperature),
+      feelslike: Math.round(values.temperatureApparent),
+      weatherCode,
+      humidity: Math.round(values.humidity),
+      windSpeed: Math.round(values.windSpeed),
+      iconUrl
+    };
+
+    lastFetched = now;
+
+    return res.json(cachedWeather);
 
   } catch (err) {
     console.error("Tomorrow.io error:", err.message);
-    res.status(500).json({ error: "Failed to fetch weather data" });
+    return res.status(500).json({ error: "Failed to fetch weather data." });
   }
 });
-
-// Spin it up
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => console.log(`Weather proxy running on ${PORT}`));
