@@ -58,26 +58,36 @@ app.get("/weather", async (req, res) => {
  
 
     // Pull video URL for this weather code
-   const iconUrl = "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722662014/Cloudy_vzb0kt.mp4";
+   try {
+  console.log(`Fetching weather data for lat=${lat}, lon=${lon}`);
 
-res.json({
-  temperature,
-  feelslike,
-  condition,
-  iconUrl
-});
+  const response = await axios.get("https://api.tomorrow.io/v4/weather/realtime", {
+    params: {
+      location: `${lat},${lon}`,
+      apikey: process.env.TOMORROW_API_KEY
+    }
+  });
 
+  const weatherData = response.data;
 
-    res.json([{
-      temperature,
-      feelslike: feelsLike,
-      condition: weatherCode,
-      iconUrl
-    }]);
+  const temperature = weatherData.data.values.temperature ?? null;
+  const feelslike = weatherData.data.values.temperatureApparent ?? null;
+  const weatherCode = weatherData.data.values.weatherCode ?? null;
 
-  } catch (error) {
-    console.error("Tomorrow.io error:", error.response?.data || error.message);
-    res.json({ error: "Failed to fetch weather data." });
+  const iconUrl = "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1722662014/Cloudy_vz9b8t.mp4";
+
+  res.json({
+    temperature,
+    feelslike,
+    condition: weatherCode,
+    iconUrl
+  });
+
+} catch (error) {
+  console.error("Tomorrow.io error:", error.response?.data || error.message);
+  res.json({ error: "Failed to fetch weather data." });
+}
+
   }
 });
 
