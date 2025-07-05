@@ -45,21 +45,12 @@ app.get('/weather', async (req, res) => {
   try {
     const url = 'https://api.open-meteo.com/v1/forecast';
 
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-    const startDate = `${yyyy}-${mm}-${dd}T00:00`;
-    const endDate = `${yyyy}-${mm}-${dd}T23:00`;
-
     const params = {
       latitude: 38.9072,
       longitude: -77.0369,
       hourly: "temperature_2m,humidity_2m,precipitation_probability,weathercode,windspeed_10m",
       timezone: "America/New_York",
-      temperature_unit: "fahrenheit",
-      start: startDate,
-      end: endDate
+      temperature_unit: "fahrenheit"
     };
 
     console.log("Making request to:", url, "with params:", params);
@@ -68,11 +59,9 @@ app.get('/weather', async (req, res) => {
 
     const hourly = response.data.hourly;
 
-    // get current hour in the API's timezone
     const now = new Date();
     const currentHour = now.toISOString().slice(0, 13); // e.g. "2025-07-05T12"
 
-    // find the closest hour in the array
     let foundIndex = hourly.time.findIndex(t => t.startsWith(currentHour));
     if (foundIndex === -1) foundIndex = 0;
 
@@ -87,51 +76,4 @@ app.get('/weather', async (req, res) => {
     const humidity = `${humidityVal}%`;
     const precipitationProbability = `${precipProbVal}%`;
     const conditionText = weatherDescriptions[conditionCode] || "Unknown";
-    const windSpeed = `${windSpeedVal} mph`;
-    const isDay = now.getHours() >= 6 && now.getHours() < 20 ? 1 : 0;
-
-    let iconUrl = videoLinks.default;
-
-    if (conditionCode === 0) {
-      iconUrl = isDay === 1 ? videoLinks.clearDay : videoLinks.clearNight;
-    } else if (conditionCode === 1 || conditionCode === 2) {
-      iconUrl = videoLinks.partlyCloudy;
-    } else if (conditionCode === 3) {
-      iconUrl = videoLinks.cloudy;
-    } else if (conditionCode === 45 || conditionCode === 48) {
-      iconUrl = videoLinks.fog;
-    } else if ([51, 53, 55, 61, 63, 65].includes(conditionCode)) {
-      iconUrl = windSpeedVal > 15 ? videoLinks.rainWind : videoLinks.rain;
-    } else if ([71, 73, 75].includes(conditionCode)) {
-      iconUrl = windSpeedVal > 15 ? videoLinks.snowWind :
-                 isDay === 1 ? videoLinks.snowDay : videoLinks.snowNight;
-    } else if (conditionCode === 95) {
-      iconUrl = isDay === 1 ? videoLinks.thunderstormDay : videoLinks.thunderstormNight;
-    } else {
-      iconUrl = videoLinks.default;
-    }
-
-    res.json([
-      {
-        temperature: temperature,
-        feelsLike: feelsLike,
-        condition: conditionText,
-        isDay: isDay,
-        windSpeed: windSpeed,
-        humidity: humidity,
-        precipitationProbability: precipitationProbability,
-        time: hourly.time[foundIndex],
-        iconUrl: iconUrl
-      }
-    ]);
-
-  } catch (error) {
-    console.error("Error fetching weather:", error.response?.data || error.message);
-    res.status(500).json({ error: "Failed to fetch weather data." });
-  }
-});
-
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+    const windSpeed = `${windSpeedVal}
