@@ -48,8 +48,9 @@ app.get('/weather', async (req, res) => {
         latitude: 38.9072,
         longitude: -77.0369,
         current_weather: true,
-        temperature_unit: "fahrenheit",
-        hourly: "humidity_2m,precipitation_probability"
+        hourly: "humidity_2m,precipitation_probability",
+        timezone: "America/New_York",
+        temperature_unit: "fahrenheit"
       }
     });
 
@@ -66,7 +67,6 @@ app.get('/weather', async (req, res) => {
     const windSpeed = `${windSpeedVal} mph`;
     const time = weather.time || "Unknown";
 
-    // Find matching hour for humidity and precip probability
     let humidity = "Unknown";
     let precipitationProbability = "Unknown";
 
