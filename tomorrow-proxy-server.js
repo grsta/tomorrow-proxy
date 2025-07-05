@@ -1,4 +1,5 @@
 const express = require('express');
+const axios = require('axios');
 const app = express();
 
 // ✅ FULL Cloudinary video mapping
@@ -37,15 +38,25 @@ const weatherVideos = {
 
 app.get('/weather', async (req, res) => {
   try {
-    // Example: simulate one weather code (e.g. partly cloudy)
-    const weatherCode = 4390;
+    const response = await axios.get('https://api.tomorrow.io/v4/timelines', {
+      params: {
+        location: "38.9072,-77.0369", // Replace with your lat,lon if needed
+        fields: ["temperature", "temperatureApparent", "weatherCode", "isDay"],
+        timesteps: "current",
+        units: "imperial",
+        apikey: "YOUR_API_KEY" // <-- replace with your real API key
+      }
+    });
 
+    const weather = response.data.data.timelines[0].intervals[0].values;
+
+    const weatherCode = weather.weatherCode;
     const iconUrl = weatherVideos[weatherCode] || null;
 
     res.json([
       {
-        temperature: 72,
-        feelsLike: 73.9,
+        temperature: weather.temperature,
+        feelsLike: weather.temperatureApparent,
         condition: weatherCode,
         isDay: weather.isDay,
         iconUrl: iconUrl
