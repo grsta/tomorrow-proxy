@@ -44,7 +44,7 @@ app.get('/weather', async (req, res) => {
         fields: ["temperature", "temperatureApparent", "weatherCode", "isDay"],
         timesteps: "current",
         units: "imperial",
-        apikey: "lXFnAVn8p9WiNDhgjhG9tAwy0Gf9aFDT" // <-- replace with your real API key
+        apikey:"lXFnAVn8p9WiNDhgjhG9tAwy0Gf9aFDT" // <-- replace with your real API key
       }
     });
 
