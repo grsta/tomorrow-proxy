@@ -2,9 +2,44 @@ const express = require('express');
 const axios = require('axios');
 const app = express();
 
-// ✅ FULL Cloudinary video mapping
+// ✅ Weather code → text mapping
+const weatherDescriptions = {
+  1000: "Clear",
+  4210: "Thunderstorm",
+  4220: "Windy Snow",
+  4230: "Thunderstorm Mix",
+  4240: "Thunderstorm Mix with Sun",
+  4250: "Thunderstorm with Wind",
+  4260: "Thunderstorm with Sun",
+  4270: "Thundersnow",
+  4280: "Thundersnow with Wind",
+  4290: "Sunny",
+  4300: "Sun and Clouds",
+  4310: "Snow",
+  4320: "Snow Shower",
+  4330: "Snow with Sun",
+  4340: "Rain Shower",
+  4350: "Rain",
+  4360: "Rain with Wind",
+  4370: "Rain Snow Shower",
+  4380: "Rain Snow Sun",
+  4390: "Partly Cloudy",
+  4400: "Night",
+  4410: "Mostly Cloudy",
+  4420: "Mixed Precipitation",
+  4430: "Mixed Wind",
+  4440: "Light Snow",
+  4450: "Convective Rain",
+  4460: "Light Rain",
+  4470: "Cloudy",
+  4480: "Convective Snow",
+  4490: "Dry Lightning",
+  4500: "Convective Mix"
+};
+
+// ✅ Cloudinary video mapping
 const weatherVideos = {
-  1000: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1751686564/Night_hdskkm.mp4", // Clear night default
+  1000: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1751686564/Night_hdskkm.mp4",
   4210: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Thunderstorm_zu58xq.mp4",
   4220: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Windy_Snow_wdaet6.mp4",
   4230: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Thunderstorm_Mix_wl2jiv.mp4",
@@ -52,7 +87,8 @@ app.get('/weather', async (req, res) => {
     const tempVal = data.timelines.daily[0].values.temperatureAvg;
     const temperature = `${tempVal}°F`;
     const feelsLike = `${tempVal}°F`;
-    const condition = data.timelines.daily[0].values.weatherCodeMax;
+    const conditionCode = data.timelines.daily[0].values.weatherCodeMax;
+    const conditionText = weatherDescriptions[conditionCode] || "Unknown";
 
     // ✅ Get local time to detect day or night
     const hour = new Date().getHours();
@@ -60,19 +96,19 @@ app.get('/weather', async (req, res) => {
 
     let iconUrl;
 
-    if (condition === 1000) {
+    if (conditionCode === 1000) {
       iconUrl = isDay === 1
         ? "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Sun_vlifro.mp4"
         : "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1751686564/Night_hdskkm.mp4";
     } else {
-      iconUrl = weatherVideos[condition] || "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Cloudy_ujjjyr.mp4";
+      iconUrl = weatherVideos[conditionCode] || "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Cloudy_ujjjyr.mp4";
     }
 
     res.json([
       {
         temperature: temperature,
         feelsLike: feelsLike,
-        condition: condition,
+        condition: conditionText,
         isDay: isDay,
         iconUrl: iconUrl
       }
