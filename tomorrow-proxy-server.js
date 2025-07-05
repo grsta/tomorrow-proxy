@@ -4,7 +4,7 @@ const app = express();
 
 // ✅ FULL Cloudinary video mapping
 const weatherVideos = {
-  1000: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1751686564/Night_hdskkm.mp4",
+  1000: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1751686564/Night_hdskkm.mp4", // Clear night default
   4210: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Thunderstorm_zu58xq.mp4",
   4220: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Windy_Snow_wdaet6.mp4",
   4230: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Thunderstorm_Mix_wl2jiv.mp4",
@@ -51,12 +51,12 @@ app.get('/weather', async (req, res) => {
     const temperature = data.timelines.daily[0].values.temperatureAvg;
     const condition = data.timelines.daily[0].values.weatherCodeMax;
 
-    // Simulate isDay = 1 (daytime) for now
-    const isDay = 1;
+    // ✅ Get local time to detect day or night
+    const hour = new Date().getHours();
+    const isDay = (hour >= 6 && hour < 18) ? 1 : 0;
 
     let iconUrl;
 
-    // ✅ Handle special logic for clear skies (code 1000)
     if (condition === 1000) {
       iconUrl = isDay === 1
         ? "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Sun_vlifro.mp4"
