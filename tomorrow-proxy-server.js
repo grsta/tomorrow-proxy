@@ -2,106 +2,99 @@ const express = require('express');
 const axios = require('axios');
 const app = express();
 
-// ✅ Weather code → text mapping
 const weatherDescriptions = {
-  1000: "Clear",
-  4210: "Thunderstorm",
-  4220: "Windy Snow",
-  4230: "Thunderstorm Mix",
-  4240: "Thunderstorm Mix with Sun",
-  4250: "Thunderstorm with Wind",
-  4260: "Thunderstorm with Sun",
-  4270: "Thundersnow",
-  4280: "Thundersnow with Wind",
-  4290: "Sunny",
-  4300: "Sun and Clouds",
-  4310: "Snow",
-  4320: "Snow Shower",
-  4330: "Snow with Sun",
-  4340: "Rain Shower",
-  4350: "Rain",
-  4360: "Rain with Wind",
-  4370: "Rain Snow Shower",
-  4380: "Rain Snow Sun",
-  4390: "Partly Cloudy",
-  4400: "Night",
-  4410: "Mostly Cloudy",
-  4420: "Mixed Precipitation",
-  4430: "Mixed Wind",
-  4440: "Light Snow",
-  4450: "Convective Rain",
-  4460: "Light Rain",
-  4470: "Cloudy",
-  4480: "Convective Snow",
-  4490: "Dry Lightning",
-  4500: "Convective Mix"
+  0: "Clear",
+  1: "Mainly clear",
+  2: "Partly cloudy",
+  3: "Overcast",
+  45: "Fog",
+  48: "Depositing rime fog",
+  51: "Light drizzle",
+  53: "Moderate drizzle",
+  55: "Dense drizzle",
+  61: "Slight rain",
+  63: "Moderate rain",
+  65: "Heavy rain",
+  71: "Slight snow",
+  73: "Moderate snow",
+  75: "Heavy snow",
+  95: "Thunderstorm"
 };
 
-// ✅ Cloudinary video mapping
-const weatherVideos = {
-  1000: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1751686564/Night_hdskkm.mp4",
-  4210: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Thunderstorm_zu58xq.mp4",
-  4220: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Windy_Snow_wdaet6.mp4",
-  4230: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Thunderstorm_Mix_wl2jiv.mp4",
-  4240: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Thunderstorm_Mix_Sun_kzlkld.mp4",
-  4250: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Thunderstorm_Wind_vdvny4.mp4",
-  4260: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Thunderstorm_Sun_pgrbjd.mp4",
-  4270: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Thundersnow_tx2ae5.mp4",
-  4280: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Thundersnow_Wind_onvm7v.mp4",
-  4290: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Sun_vlifro.mp4",
-  4300: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Sun_Clouds_kfb1c9.mp4",
-  4310: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Snow_apib0s.mp4",
-  4320: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Snow_Shower_uqb03b.mp4",
-  4330: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Snow_Sun_wdvphe.mp4",
-  4340: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Rain_Shower_j5qs3f.mp4",
-  4350: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Rain_I_qijqzs.mp4",
-  4360: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Rain_Wind_ddpjhp.mp4",
-  4370: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Rain_Snow_Shower_o77gbf.mp4",
-  4380: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Rain_Snow_Sun_xoxeqr.mp4",
-  4390: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Partly_Cloudy_xhcdwf.mp4",
-  4400: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Night_sykp1o.mp4",
-  4410: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Mostly_Cloudy_eqdbmn.mp4",
-  4420: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Mix_rwvamd.mp4",
-  4430: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Mix_Wind_t711q0.mp4",
-  4440: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Light_Snow_gswdxh.mp4",
-  4450: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Convective_Rain_sasinh.mp4",
-  4460: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Light_Rain_azdyyv.mp4",
-  4470: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Cloudy_ujjjyr.mp4",
-  4480: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Convective_Snow_pubntn.mp4",
-  4490: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Dry_Lightning_qcgmuh.mp4",
-  4500: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Convective_Mix_dhw2p4.mp4"
+const videoLinks = {
+  clearDay: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Sun_vlifro.mp4",
+  clearNight: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1751686564/Night_hdskkm.mp4",
+  partlyCloudy: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Partly_Cloudy_xhcdwf.mp4",
+  cloudy: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Cloudy_ujjjyr.mp4",
+  mostlyCloudy: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Mostly_Cloudy_eqdbmn.mp4",
+  fog: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Mostly_Cloudy_eqdbmn.mp4",
+  lightRain: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Light_Rain_azdyyv.mp4",
+  rain: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Rain_I_qijqzs.mp4",
+  rainWind: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Rain_Wind_ddpjhp.mp4",
+  thunderstormDay: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Thunderstorm_Sun_pgrbjd.mp4",
+  thunderstormNight: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Thunderstorm_zu58xq.mp4",
+  snowDay: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Snow_Sun_wdvphe.mp4",
+  snowNight: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Snow_apib0s.mp4",
+  snowWind: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Windy_Snow_wdaet6.mp4",
+  mixed: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Mix_rwvamd.mp4",
+  mixedWind: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Mix_Wind_t711q0.mp4",
+  default: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Cloudy_ujjjyr.mp4"
 };
 
 app.get('/weather', async (req, res) => {
   try {
-    const response = await axios.get('https://api.tomorrow.io/v4/weather/forecast', {
+    const response = await axios.get('https://api.open-meteo.com/v1/forecast', {
       params: {
-        location: "38.9072,-77.0369",
-        units: "imperial",
-        apikey: "lXFnAVn8p9WiNDhgjhG9tAwy0Gf9aFDT"
+        latitude: 38.9072,
+        longitude: -77.0369,
+        current_weather: true,
+        temperature_unit: "fahrenheit",
+        hourly: ["humidity_2m", "precipitation_probability"].join(",")
       }
     });
 
-    const data = response.data;
+    const weather = response.data.current_weather;
+    const hourly = response.data.hourly;
 
-    const tempVal = data.timelines.daily[0].values.temperatureAvg;
+    const tempVal = weather.temperature;
     const temperature = `${tempVal}°F`;
     const feelsLike = `${tempVal}°F`;
-    const conditionCode = data.timelines.daily[0].values.weatherCodeMax;
+    const conditionCode = weather.weathercode;
     const conditionText = weatherDescriptions[conditionCode] || "Unknown";
+    const isDay = weather.is_day;
+    const windSpeedVal = weather.windspeed || 0;
+    const windSpeed = `${windSpeedVal} mph`;
+    const time = weather.time || "Unknown";
 
-    // ✅ Get local time to detect day or night
-    const hour = new Date().getHours();
-    const isDay = (hour >= 6 && hour < 18) ? 1 : 0;
+    // Find matching hour for humidity and precip probability
+    let humidity = "Unknown";
+    let precipitationProbability = "Unknown";
 
-    let iconUrl;
+    const index = hourly.time.findIndex(t => t === time);
+    if (index !== -1) {
+      humidity = `${hourly.humidity_2m[index]}%`;
+      precipitationProbability = `${hourly.precipitation_probability[index]}%`;
+    }
 
-    if (conditionCode === 1000) {
-      iconUrl = isDay === 1
-        ? "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Sun_vlifro.mp4"
-        : "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1751686564/Night_hdskkm.mp4";
+    let iconUrl = videoLinks.default;
+
+    if (conditionCode === 0) {
+      iconUrl = isDay === 1 ? videoLinks.clearDay : videoLinks.clearNight;
+    } else if (conditionCode === 1 || conditionCode === 2) {
+      iconUrl = videoLinks.partlyCloudy;
+    } else if (conditionCode === 3) {
+      iconUrl = videoLinks.cloudy;
+    } else if (conditionCode === 45 || conditionCode === 48) {
+      iconUrl = videoLinks.fog;
+    } else if ([51, 53, 55, 61, 63, 65].includes(conditionCode)) {
+      iconUrl = windSpeedVal > 15 ? videoLinks.rainWind : videoLinks.rain;
+    } else if ([71, 73, 75].includes(conditionCode)) {
+      iconUrl = windSpeedVal > 15 ? videoLinks.snowWind :
+                 isDay === 1 ? videoLinks.snowDay : videoLinks.snowNight;
+    } else if (conditionCode === 95) {
+      iconUrl = isDay === 1 ? videoLinks.thunderstormDay : videoLinks.thunderstormNight;
     } else {
-      iconUrl = weatherVideos[conditionCode] || "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Cloudy_ujjjyr.mp4";
+      iconUrl = videoLinks.default;
     }
 
     res.json([
@@ -110,6 +103,10 @@ app.get('/weather', async (req, res) => {
         feelsLike: feelsLike,
         condition: conditionText,
         isDay: isDay,
+        windSpeed: windSpeed,
+        humidity: humidity,
+        precipitationProbability: precipitationProbability,
+        time: time,
         iconUrl: iconUrl
       }
     ]);
