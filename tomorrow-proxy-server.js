@@ -43,11 +43,15 @@ const videoLinks = {
 
 app.get('/weather', async (req, res) => {
   try {
+    // ✅ USE LAT/LON FROM USER
+    const lat = req.query.lat ? parseFloat(req.query.lat) : 38.9072;
+    const lon = req.query.lon ? parseFloat(req.query.lon) : -77.0369;
+
     const url = 'https://api.open-meteo.com/v1/forecast';
 
     const params = {
-      latitude: 38.9072,
-      longitude: -77.0369,
+      latitude: lat,
+      longitude: lon,
       hourly: "temperature_2m,humidity_2m,precipitation_probability,weathercode,windspeed_10m",
       timezone: "America/New_York",
       temperature_unit: "fahrenheit"
@@ -124,4 +128,3 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
