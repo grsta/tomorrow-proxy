@@ -38,32 +38,34 @@ const weatherVideos = {
 
 app.get('/weather', async (req, res) => {
   try {
-    const response = await axios.get('https://api.tomorrow.io/v4/timelines', {
+    const response = await axios.get('https://api.tomorrow.io/v4/weather/forecast', {
       params: {
-        location: "38.9072,-77.0369", // Replace with your lat,lon if needed
-        fields: ["temperature", "temperatureApparent", "weatherCode", "isDay"],
-        timesteps: "current",
-        units: "imperial",
-        apikey:"lXFnAVn8p9WiNDhgjhG9tAwy0Gf9aFDT" // <-- replace with your real API key
+        location: "38.9072,-77.0369",
+        apikey: "lXFnAVn8p9WiNDhgjhG9tAwy0Gf9aFDT"
       }
     });
 
-    const weather = response.data.data.timelines[0].intervals[0].values;
+    const data = response.data;
 
-    const weatherCode = weather.weatherCode;
-    const iconUrl = weatherVideos[weatherCode] || null;
+    // Example pulling some values
+    const temperature = data.timelines.daily[0].values.temperatureAvg;
+    const condition = data.timelines.daily[0].values.weatherCodeMax;
+    const isDay = 1; // forecast API doesn't return isDay so assume daytime
+
+    const iconUrl = weatherVideos[condition] || null;
 
     res.json([
       {
-        temperature: weather.temperature,
-        feelsLike: weather.temperatureApparent,
-        condition: weatherCode,
-        isDay: weather.isDay,
+        temperature: temperature,
+        feelsLike: temperature,
+        condition: condition,
+        isDay: isDay,
         iconUrl: iconUrl
       }
     ]);
+
   } catch (error) {
-    console.error("Error fetching weather:", error.message);
+    console.error("Error fetching weather:", error.response?.data || error.message);
     res.status(500).json({ error: "Failed to fetch weather data." });
   }
 });
@@ -72,3 +74,4 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
