@@ -43,38 +43,52 @@ const videoLinks = {
 
 app.get('/weather', async (req, res) => {
   try {
-    const response = await axios.get('https://api.open-meteo.com/v1/forecast', {
-      params: {
-        latitude: 38.9072,
-        longitude: -77.0369,
-        current_weather: true,
-        hourly: "humidity_2m,precipitation_probability",
-        timezone: "America/New_York",
-        temperature_unit: "fahrenheit"
-      }
-    });
+    const url = 'https://api.open-meteo.com/v1/forecast';
 
-    const weather = response.data.current_weather;
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const startDate = `${yyyy}-${mm}-${dd}T00:00`;
+    const endDate = `${yyyy}-${mm}-${dd}T23:00`;
+
+    const params = {
+      latitude: 38.9072,
+      longitude: -77.0369,
+      hourly: "temperature_2m,humidity_2m,precipitation_probability,weathercode,windspeed_10m",
+      timezone: "America/New_York",
+      temperature_unit: "fahrenheit",
+      start: startDate,
+      end: endDate
+    };
+
+    console.log("Making request to:", url, "with params:", params);
+
+    const response = await axios.get(url, { params });
+
     const hourly = response.data.hourly;
 
-    const tempVal = weather.temperature;
+    // get current hour in the API's timezone
+    const now = new Date();
+    const currentHour = now.toISOString().slice(0, 13); // e.g. "2025-07-05T12"
+
+    // find the closest hour in the array
+    let foundIndex = hourly.time.findIndex(t => t.startsWith(currentHour));
+    if (foundIndex === -1) foundIndex = 0;
+
+    const tempVal = hourly.temperature_2m[foundIndex];
+    const humidityVal = hourly.humidity_2m[foundIndex];
+    const precipProbVal = hourly.precipitation_probability[foundIndex];
+    const conditionCode = hourly.weathercode[foundIndex];
+    const windSpeedVal = hourly.windspeed_10m[foundIndex];
+
     const temperature = `${tempVal}°F`;
     const feelsLike = `${tempVal}°F`;
-    const conditionCode = weather.weathercode;
+    const humidity = `${humidityVal}%`;
+    const precipitationProbability = `${precipProbVal}%`;
     const conditionText = weatherDescriptions[conditionCode] || "Unknown";
-    const isDay = weather.is_day;
-    const windSpeedVal = weather.windspeed || 0;
     const windSpeed = `${windSpeedVal} mph`;
-    const time = weather.time || "Unknown";
-
-    let humidity = "Unknown";
-    let precipitationProbability = "Unknown";
-
-    const index = hourly.time.findIndex(t => t === time);
-    if (index !== -1) {
-      humidity = `${hourly.humidity_2m[index]}%`;
-      precipitationProbability = `${hourly.precipitation_probability[index]}%`;
-    }
+    const isDay = now.getHours() >= 6 && now.getHours() < 20 ? 1 : 0;
 
     let iconUrl = videoLinks.default;
 
@@ -106,7 +120,7 @@ app.get('/weather', async (req, res) => {
         windSpeed: windSpeed,
         humidity: humidity,
         precipitationProbability: precipitationProbability,
-        time: time,
+        time: hourly.time[foundIndex],
         iconUrl: iconUrl
       }
     ]);
