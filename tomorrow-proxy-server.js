@@ -76,4 +76,52 @@ app.get('/weather', async (req, res) => {
     const humidity = `${humidityVal}%`;
     const precipitationProbability = `${precipProbVal}%`;
     const conditionText = weatherDescriptions[conditionCode] || "Unknown";
-    const windSpeed = `${windSpeedVal}
+    const windSpeed = `${windSpeedVal} mph`;
+    const isDay = now.getHours() >= 6 && now.getHours() < 20 ? 1 : 0;
+
+    let iconUrl = videoLinks.default;
+
+    if (conditionCode === 0) {
+      iconUrl = isDay === 1 ? videoLinks.clearDay : videoLinks.clearNight;
+    } else if (conditionCode === 1 || conditionCode === 2) {
+      iconUrl = videoLinks.partlyCloudy;
+    } else if (conditionCode === 3) {
+      iconUrl = videoLinks.cloudy;
+    } else if (conditionCode === 45 || conditionCode === 48) {
+      iconUrl = videoLinks.fog;
+    } else if ([51, 53, 55, 61, 63, 65].includes(conditionCode)) {
+      iconUrl = windSpeedVal > 15 ? videoLinks.rainWind : videoLinks.rain;
+    } else if ([71, 73, 75].includes(conditionCode)) {
+      iconUrl = windSpeedVal > 15 ? videoLinks.snowWind :
+                 isDay === 1 ? videoLinks.snowDay : videoLinks.snowNight;
+    } else if (conditionCode === 95) {
+      iconUrl = isDay === 1 ? videoLinks.thunderstormDay : videoLinks.thunderstormNight;
+    } else {
+      iconUrl = videoLinks.default;
+    }
+
+    res.json([
+      {
+        temperature: temperature,
+        feelsLike: feelsLike,
+        condition: conditionText,
+        isDay: isDay,
+        windSpeed: windSpeed,
+        humidity: humidity,
+        precipitationProbability: precipitationProbability,
+        time: hourly.time[foundIndex],
+        iconUrl: iconUrl
+      }
+    ]);
+
+  } catch (error) {
+    console.error("Error fetching weather:", error.response?.data || error.message);
+    res.status(500).json({ error: "Failed to fetch weather data." });
+  }
+});
+
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
