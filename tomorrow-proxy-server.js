@@ -42,6 +42,7 @@ app.get('/weather', async (req, res) => {
     const response = await axios.get('https://api.tomorrow.io/v4/weather/forecast', {
       params: {
         location: "38.9072,-77.0369",
+        units: "imperial"
         apikey: "lXFnAVn8p9WiNDhgjhG9tAwy0Gf9aFDT"
       }
     });
