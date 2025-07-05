@@ -49,7 +49,9 @@ app.get('/weather', async (req, res) => {
 
     const data = response.data;
 
-    const temperature = data.timelines.daily[0].values.temperatureAvg;
+    const tempVal = data.timelines.daily[0].values.temperatureAvg;
+    const temperature = `${tempVal}°F`;
+    const feelsLike = `${tempVal}°F`;
     const condition = data.timelines.daily[0].values.weatherCodeMax;
 
     // ✅ Get local time to detect day or night
@@ -69,7 +71,7 @@ app.get('/weather', async (req, res) => {
     res.json([
       {
         temperature: temperature,
-        feelsLike: temperature,
+        feelsLike: feelsLike,
         condition: condition,
         isDay: isDay,
         iconUrl: iconUrl
