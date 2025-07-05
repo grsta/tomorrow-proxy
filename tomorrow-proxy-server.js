@@ -49,7 +49,7 @@ app.get('/weather', async (req, res) => {
         longitude: -77.0369,
         current_weather: true,
         temperature_unit: "fahrenheit",
-        hourly: ["humidity_2m", "precipitation_probability"].join(",")
+        hourly: "humidity_2m,precipitation_probability"
       }
     });
 
