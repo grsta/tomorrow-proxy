@@ -47,6 +47,7 @@ app.get('/weather', async (req, res) => {
         temperature: 72,
         feelsLike: 73.9,
         condition: weatherCode,
+        isDay: weather.isDay,
         iconUrl: iconUrl
       }
     ]);
