@@ -8,7 +8,7 @@
  *
  * Written for Commander Red and the Swole Empire.
  */
-
+const PORT = process.env.PORT || 3000;
 import express from "express";
 import fetch from "node-fetch";
 import cors from "cors";
