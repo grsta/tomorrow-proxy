@@ -5,7 +5,7 @@ import cors from "cors";
 const app = express();
 app.use(cors());
 
-// ✅ Weather code text mapping
+// ✅ FULL weatherCodes mapping
 const weatherCodes = {
   0: "Clear sky",
   1: "Mainly clear",
@@ -37,9 +37,8 @@ const weatherCodes = {
   99: "Thunderstorm with heavy hail"
 };
 
-// ✅ Cloudinary videos
+// ✅ FULL Cloudinary video mapping
 const weatherVideos = {
-  const weatherVideos = {
   0: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Sun_vlifro.mp4",
   1: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Partly_Cloudy_xhcdwf.mp4",
   2: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Partly_Cloudy_xhcdwf.mp4",
@@ -69,8 +68,6 @@ const weatherVideos = {
   96: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Thunderstorm_Sun_pgrbjd.mp4",
   99: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Thunderstorm_Sun_pgrbjd.mp4",
   night_clear: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1751686564/Night_hdskkm.mp4"
-};
-
 };
 
 app.get("/", (req, res) => {
@@ -113,7 +110,7 @@ app.get("/weather", async (req, res) => {
 
     const conditionText = weatherCodes[weatherCode] || "Clear sky";
 
-    // ✅ Dummy alert object to force fields to exist
+    // ✅ Dummy alert object for testing in Adalo
     const alert = {
       alertActive: true,
       alertEvent: "Special Weather Statement",
