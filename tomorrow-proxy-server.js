@@ -1,64 +1,11 @@
-/**
- * Swole Empire Unified Backend
- * ----------------------------
- * - Handles Tomorrow.io Proxy (optional, future use)
- * - Handles Open-Meteo + NOAA weather beast
- * - Maps weather codes to Cloudinary video URLs
- * - Provides data in both US + global units
- *
- * Written for Commander Red and the Swole Empire.
- */
-const PORT = process.env.PORT || 3000;
 import express from "express";
-import fetch from "node-fetch";
+import axios from "axios";
 import cors from "cors";
 
 const app = express();
 app.use(cors());
 
-/* -----------------------------------------------------------------------------
-   TOMORROW.IO PROXY ROUTE
-   -----------------------------------------------------------------------------
-
-   📝 RED — READ THIS!
-
-   If you're NOT using Tomorrow.io yet, you can safely COMMENT OUT
-   the entire route below from:
-
-       app.get("/tomorrow-proxy", ... )
-
-   down to the closing bracket:
-
-       });
-
-   And just leave the new /weather route active.
-
------------------------------------------------------------------------------ */
-
-app.get("/tomorrow-proxy", async (req, res) => {
-  try {
-    const { lat, lon } = req.query;
-
-    if (!lat || !lon) {
-      return res.status(400).json({ error: "Missing lat/lon parameters." });
-    }
-
-    const tomorrowUrl = `https://api.tomorrow.io/v4/weather/realtime?location=${lat},${lon}&apikey=YOUR_TOMORROW_API_KEY`;
-
-    const response = await fetch(tomorrowUrl);
-    const data = await response.json();
-
-    res.json(data);
-  } catch (error) {
-    console.error("Tomorrow.io Proxy Error:", error);
-    res.status(500).json({ error: "Error calling Tomorrow.io API." });
-  }
-});
-
-/* -----------------------------------------------------------------------------
-   WEATHER CODES → TEXT DESCRIPTION
------------------------------------------------------------------------------ */
-
+// ✅ Weather code text mapping
 const weatherCodes = {
   0: "Clear sky",
   1: "Mainly clear",
@@ -90,11 +37,9 @@ const weatherCodes = {
   99: "Thunderstorm with heavy hail"
 };
 
-/* -----------------------------------------------------------------------------
-   WEATHER CODES → CLOUDINARY VIDEO URLS
------------------------------------------------------------------------------ */
-
+// ✅ Cloudinary videos
 const weatherVideos = {
+  const weatherVideos = {
   0: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Sun_vlifro.mp4",
   1: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Partly_Cloudy_xhcdwf.mp4",
   2: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Partly_Cloudy_xhcdwf.mp4",
@@ -126,56 +71,39 @@ const weatherVideos = {
   night_clear: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1751686564/Night_hdskkm.mp4"
 };
 
-/* -----------------------------------------------------------------------------
-   WEATHER BEAST ROUTE (OPEN-METEO + NOAA)
------------------------------------------------------------------------------ */
+};
+
+app.get("/", (req, res) => {
+  res.send("🔥 SWOLE BACKEND IS LIVE 🔥");
+});
 
 app.get("/weather", async (req, res) => {
   try {
-    let lat = req.query.lat;
-    let lon = req.query.lon;
-    let regionCode = null;
-    let source = "";
+    const lat = req.query.lat || 38.9072;
+    const lon = req.query.lon || -77.0369;
+    const timezone = req.query.timezone || "auto";
 
-    if (!lat || !lon) {
-      console.log("No lat/lon provided. Doing IP lookup…");
-      const ipData = await fetch("https://ipapi.co/json/").then((r) => r.json());
-      lat = ipData.latitude;
-      lon = ipData.longitude;
-      regionCode = ipData.region_code;
-      source = "IP Lookup";
-    } else {
-      regionCode = req.query.region || "LA";
-      source = "GPS or Provided Lat/Lon";
-    }
+    const url = "https://api.open-meteo.com/v1/forecast";
 
-    console.log("Using lat/lon:", lat, lon);
+    const params = {
+      latitude: lat,
+      longitude: lon,
+      current: "temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,is_day,wind_speed_10m",
+      timezone: timezone,
+      temperature_unit: "fahrenheit",
+      wind_speed_unit: "mph"
+    };
 
-    // Call Open-Meteo
-    const openMeteoUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,relative_humidity_2m,precipitation,windspeed_10m,cloudcover,weathercode&timezone=America/Chicago`;
+    console.log("Sending request to Open-Meteo:", url);
+    console.log("Params:", params);
 
-    const weatherData = await fetch(openMeteoUrl).then((r) => r.json());
+    const response = await axios.get(url, { params });
+    const weather = response.data.current;
 
-    const current = weatherData.current_weather;
-    const hourly = weatherData.hourly || {};
-
-    const temp_c = current?.temperature || null;
-    const temp_f = temp_c ? ((temp_c * 9) / 5 + 32).toFixed(1) : null;
-
-    const feelsLike_c = temp_c;
-    const feelsLike_f = temp_f;
-
-    const windspeed_kmh = current?.windspeed || null;
-    const windspeed_mph = windspeed_kmh
-      ? (windspeed_kmh * 0.621371).toFixed(1)
-      : null;
-
-    const weatherCode = current?.weathercode ?? 0;
-    const isDay = current?.is_day ?? 1;
-
+    const weatherCode = weather.weather_code ?? 0;
     let iconUrl = weatherVideos[weatherCode] || null;
 
-    if (isDay === 0) {
+    if (weather.is_day === 0) {
       if (weatherCode === 0) {
         iconUrl = weatherVideos["night_clear"];
       } else {
@@ -185,73 +113,45 @@ app.get("/weather", async (req, res) => {
 
     const conditionText = weatherCodes[weatherCode] || "Clear sky";
 
-    const weather = {
-      temp_c,
-      temp_f,
-      feelsLike_c,
-      feelsLike_f,
-      windspeed_kmh,
-      windspeed_mph,
-      weathercode: weatherCode,
-      conditionText,
-      iconUrl,
-      isDay,
-      humidity: hourly?.relative_humidity_2m?.[0] || null,
-      precipitation_mm: hourly?.precipitation?.[0] || null,
-      cloudcover_pct: hourly?.cloudcover?.[0] || null
+    // ✅ Dummy alert object to force fields to exist
+    const alert = {
+      alertActive: true,
+      alertEvent: "Special Weather Statement",
+      alertDescription: "A big storm is coming!",
+      alertInstruction: "Seek shelter indoors immediately.",
+      alertExpires: "2025-07-06T19:45:00-05:00",
+      alertSeverity: "Severe",
+      alertHeadline: "Severe Thunderstorm Warning",
+      alertSender: "NWS Shreveport LA"
     };
 
-    console.log("Weather Data:", weather);
-
-    // NOAA
-    const noaaUrl = `https://api.weather.gov/alerts/active?area=${regionCode}`;
-    const noaaData = await fetch(noaaUrl).then((r) => r.json());
-
-    let alert = {
-      alertActive: false,
-      alertEvent: null,
-      alertDescription: null,
-      alertInstruction: null,
-      alertExpires: null,
-      alertSeverity: null,
-      alertHeadline: null,
-      alertSender: null
-    };
-
-    if (noaaData.features?.length > 0) {
-      const alertProps = noaaData.features[0].properties;
-      alert = {
-        alertActive: true,
-        alertEvent: alertProps.event,
-        alertDescription: alertProps.description,
-        alertInstruction: alertProps.instruction,
-        alertExpires: alertProps.expires,
-        alertSeverity: alertProps.severity,
-        alertHeadline: alertProps.headline,
-        alertSender: alertProps.senderName
-      };
-    }
-
-    console.log("NOAA Alert:", alert);
-
-    return res.json({
-      source,
-      lat,
-      lon,
-      region: regionCode,
-      weather,
-      alert
+    res.json({
+      source: "Dummy Test Data",
+      lat: lat,
+      lon: lon,
+      region: "Test Region",
+      weather: {
+        temp_f: 79.9,
+        feelsLike_f: 79.9,
+        windSpeed_mph: 7.1,
+        weathercode: weatherCode,
+        conditionText: conditionText,
+        iconUrl: iconUrl,
+        isDay: weather.is_day,
+        humidity: 87,
+        precipitation_mm: 2.5,
+        cloudcover_pct: 65
+      },
+      alert: alert
     });
+
   } catch (error) {
-    console.error("Weather Beast Error:", error);
+    console.error("Error fetching weather:", error.message);
     res.status(500).json({ error: "Failed to fetch weather data." });
   }
 });
 
-/* -----------------------------------------------------------------------------
-   START SERVER
------------------------------------------------------------------------------ */
-
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
-  console.log(`Swole backend running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
