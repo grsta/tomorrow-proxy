@@ -122,26 +122,29 @@ app.get("/weather", async (req, res) => {
       alertSender: "NWS Shreveport LA"
     };
 
+    // ✅ RETURN DATA AS ARRAY!
     res.json({
-      data: {
-        source: "Dummy Test Data",
-        lat: lat,
-        lon: lon,
-        region: "Test Region",
-        weather: {
-          temp_f: 79.9,
-          feelsLike_f: 79.9,
-          windSpeed_mph: 7.1,
-          weathercode: weatherCode,
-          conditionText: conditionText,
-          iconUrl: iconUrl,
-          isDay: weather.is_day,
-          humidity: 87,
-          precipitation_mm: 2.5,
-          cloudcover_pct: 65
-        },
-        alert: alert
-      }
+      data: [
+        {
+          source: "Dummy Test Data",
+          lat: lat,
+          lon: lon,
+          region: "Test Region",
+          weather: {
+            temp_f: 79.9,
+            feelsLike_f: 79.9,
+            windSpeed_mph: 7.1,
+            weathercode: weatherCode,
+            conditionText: conditionText,
+            iconUrl: iconUrl,
+            isDay: weather.is_day,
+            humidity: 87,
+            precipitation_mm: 2.5,
+            cloudcover_pct: 65
+          },
+          alert: alert
+        }
+      ]
     });
 
   } catch (error) {
