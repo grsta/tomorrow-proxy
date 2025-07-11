@@ -5,6 +5,7 @@ import cors from "cors";
 const app = express();
 app.use(cors());
 
+// ✅ Weather code text mapping
 const weatherCodes = {
   0: "Clear sky",
   1: "Mainly clear",
@@ -36,6 +37,7 @@ const weatherCodes = {
   99: "Thunderstorm with heavy hail"
 };
 
+// ✅ Video URLs mapped to weather codes
 const weatherVideos = {
   0: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Sun_vlifro.mp4",
   1: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Partly_Cloudy_xhcdwf.mp4",
@@ -78,57 +80,42 @@ app.get("/weather", async (req, res) => {
     const lon = req.query.lon || -77.0369;
     const timezone = req.query.timezone || "auto";
 
-    // CALL #1 — get current weather
-    const currentRes = await axios.get(
-      "https://api.open-meteo.com/v1/forecast",
-      {
-        params: {
-          latitude: lat,
-          longitude: lon,
-          current_weather: true,
-          temperature_unit: "fahrenheit",
-          wind_speed_unit: "mph",
-          timezone: timezone
-        }
-      }
-    );
+    const url = "https://api.open-meteo.com/v1/forecast";
 
-    const current = currentRes.data.current_weather;
-    const weatherCode = current.weathercode ?? 0;
+    const params = {
+      latitude: lat,
+      longitude: lon,
+      current: "temperature_2m,apparent_temperature,weather_code,is_day,wind_speed_10m,cloudcover",
+      daily: "sunrise,sunset",          // ✅ removed moon_phase
+      hourly: "temperature_2m,apparent_temperature,uv_index,cloudcover,precipitation_probability,windgusts_10m",
+      timezone: timezone,
+      temperature_unit: "fahrenheit",
+      wind_speed_unit: "mph"
+    };
 
+    console.log("Sending request to Open-Meteo:", url);
+    console.log("Params:", params);
+
+    const response = await axios.get(url, { params });
+
+    const current = response.data.current;
+    const daily = response.data.daily;
+    const hourly = response.data.hourly;
+
+    const weatherCode = current.weather_code ?? 0;
     let iconUrl = weatherVideos[weatherCode] || null;
+
     if (current.is_day === 0 && weatherCode === 0) {
       iconUrl = weatherVideos["night_clear"];
     }
 
     const conditionText = weatherCodes[weatherCode] || "Clear sky";
 
-    // CALL #2 — get daily + hourly
-    const forecastRes = await axios.get(
-      "https://api.open-meteo.com/v1/forecast",
-      {
-        params: {
-          latitude: lat,
-          longitude: lon,
-          daily: "sunrise,sunset,moon_phase",
-          hourly:
-            "temperature_2m,apparent_temperature,uv_index,cloudcover,precipitation_probability,windgusts_10m",
-          temperature_unit: "fahrenheit",
-          wind_speed_unit: "mph",
-          timezone: timezone
-        }
-      }
-    );
-
-    const daily = forecastRes.data.daily;
-    const hourly = forecastRes.data.hourly;
-
     const sunrise = daily?.sunrise?.[0] || null;
     const sunset = daily?.sunset?.[0] || null;
-    const moonPhase = daily?.moon_phase?.[0] || null;
 
     const hourlyData = {
-      hours: hourly?.time?.map((t) => t.split("T")[1].substring(0, 5)) || [],
+      hours: hourly?.time?.map(t => t.split("T")[1].substring(0,5)) || [],
       temp_f: hourly?.temperature_2m || [],
       feelsLike_f: hourly?.apparent_temperature || [],
       uvIndex: hourly?.uv_index || [],
@@ -154,18 +141,18 @@ app.get("/weather", async (req, res) => {
       lon: lon,
       region: "Test Region",
       weather: {
-        temp_f: current.temperature,
-        windSpeed_mph: current.windspeed,
+        temp_f: current.temperature_2m,
+        feelsLike_f: current.apparent_temperature,
+        windSpeed_mph: current.wind_speed_10m,
         weathercode: weatherCode,
         conditionText: conditionText,
         iconUrl: iconUrl,
         isDay: current.is_day,
-        humidity: 87,
-        precipitation_mm: 2.5,
-        cloudcover_pct: hourly?.cloudcover?.[0] || null,
+        humidity: 87, // Dummy for now
+        precipitation_mm: 2.5, // Dummy for now
+        cloudcover_pct: current.cloudcover,
         sunrise: sunrise,
         sunset: sunset,
-        moonPhase: moonPhase,
         uvIndex: hourly?.uv_index?.[0] || null,
         windGusts_mph: hourly?.windgusts_10m?.[0] || null,
         precipProb_pct: hourly?.precipitation_probability?.[0] || null
@@ -173,11 +160,10 @@ app.get("/weather", async (req, res) => {
       hourly: hourlyData,
       alert: alert
     });
-  } catch (err) {
-    console.error("Error fetching weather:", err.message);
-    res.status(500).json({
-      error: "Failed to fetch weather data. " + err.message
-    });
+
+  } catch (error) {
+    console.error("Error fetching weather:", error.message);
+    res.status(500).json({ error: "Failed to fetch weather data." });
   }
 });
 
