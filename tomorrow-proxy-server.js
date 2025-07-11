@@ -5,7 +5,7 @@ import cors from "cors";
 const app = express();
 app.use(cors());
 
-// ✅ FULL Weather code mappings
+// ✅ Weather code mapping
 const weatherCodes = {
   0: "Clear sky",
   1: "Mainly clear",
@@ -37,7 +37,7 @@ const weatherCodes = {
   99: "Thunderstorm with heavy hail"
 };
 
-// ✅ FULL Cloudinary video mapping
+// ✅ Cloudinary videos
 const weatherVideos = {
   0: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Sun_vlifro.mp4",
   1: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Partly_Cloudy_xhcdwf.mp4",
@@ -80,43 +80,58 @@ app.get("/weather", async (req, res) => {
     const lon = req.query.lon || -77.0369;
     const timezone = req.query.timezone || "auto";
 
-    const url = "https://api.open-meteo.com/v1/forecast";
+    // FIRST CALL → current_weather only
+    const currentRes = await axios.get(
+      "https://api.open-meteo.com/v1/forecast",
+      {
+        params: {
+          latitude: lat,
+          longitude: lon,
+          current_weather: true,
+          temperature_unit: "fahrenheit",
+          wind_speed_unit: "mph",
+          timezone: timezone
+        }
+      }
+    );
 
-    const params = {
-      latitude: lat,
-      longitude: lon,
-      current_weather: true,
-      daily: "sunrise,sunset,moon_phase",
-      hourly: "temperature_2m,apparent_temperature,uv_index,cloudcover,precipitation_probability,windgusts_10m",
-      timezone: timezone,
-      temperature_unit: "fahrenheit",
-      wind_speed_unit: "mph"
-    };
-
-    console.log("Sending request to Open-Meteo:", url);
-    console.log("Params:", params);
-
-    const response = await axios.get(url, { params });
-
-    const current = response.data.current_weather;
-    const daily = response.data.daily;
-    const hourly = response.data.hourly;
+    const current = currentRes.data.current_weather;
 
     const weatherCode = current.weathercode ?? 0;
     let iconUrl = weatherVideos[weatherCode] || null;
-
     if (current.is_day === 0 && weatherCode === 0) {
       iconUrl = weatherVideos["night_clear"];
     }
 
     const conditionText = weatherCodes[weatherCode] || "Clear sky";
 
+    // SECOND CALL → daily + hourly
+    const forecastRes = await axios.get(
+      "https://api.open-meteo.com/v1/forecast",
+      {
+        params: {
+          latitude: lat,
+          longitude: lon,
+          daily: "sunrise,sunset,moon_phase",
+          hourly:
+            "temperature_2m,apparent_temperature,uv_index,cloudcover,precipitation_probability,windgusts_10m",
+          temperature_unit: "fahrenheit",
+          wind_speed_unit: "mph",
+          timezone: timezone
+        }
+      }
+    );
+
+    const daily = forecastRes.data.daily;
+    const hourly = forecastRes.data.hourly;
+
     const sunrise = daily?.sunrise?.[0] || null;
     const sunset = daily?.sunset?.[0] || null;
     const moonPhase = daily?.moon_phase?.[0] || null;
 
     const hourlyData = {
-      hours: hourly?.time?.map(t => t.split("T")[1].substring(0,5)) || [],
+      hours:
+        hourly?.time?.map((t) => t.split("T")[1].substring(0, 5)) || [],
       temp_f: hourly?.temperature_2m || [],
       feelsLike_f: hourly?.apparent_temperature || [],
       uvIndex: hourly?.uv_index || [],
@@ -136,7 +151,7 @@ app.get("/weather", async (req, res) => {
       alertSender: "NWS Shreveport LA"
     };
 
-    res.status(200).json({
+    res.json({
       source: "Open-Meteo",
       lat: lat,
       lon: lon,
@@ -149,8 +164,8 @@ app.get("/weather", async (req, res) => {
         conditionText: conditionText,
         iconUrl: iconUrl,
         isDay: current.is_day,
-        humidity: 87, // Dummy value for now
-        precipitation_mm: 2.5, // Dummy value for now
+        humidity: 87,
+        precipitation_mm: 2.5,
         cloudcover_pct: hourly?.cloudcover?.[0] || null,
         sunrise: sunrise,
         sunset: sunset,
@@ -162,10 +177,11 @@ app.get("/weather", async (req, res) => {
       hourly: hourlyData,
       alert: alert
     });
-
-  } catch (error) {
-    console.error("Error fetching weather:", error.message);
-    res.status(500).json({ error: "Failed to fetch weather data." });
+  } catch (err) {
+    console.error("Error fetching weather:", err.message);
+    res
+      .status(500)
+      .json({ error: "Failed to fetch weather data. " + err.message });
   }
 });
 
