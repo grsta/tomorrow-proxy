@@ -116,25 +116,58 @@ app.get("/weather", async (req, res) => {
 
     const { data } = await axios.get(url);
 
-    const currentCode = data.current_weather?.weathercode || 0;
-    const conditionText = weatherCodes[currentCode] || "Unknown";
-    const iconURL = weatherIcons[currentCode] || weatherIcons[0];
-    const overlayURL = overlayVideos[String(currentCode)] || overlayVideos["0"];
+    // Find current hour in hourly forecast
+    const now = new Date();
+    const nowHourStr = now.toISOString().slice(0, 13);
+
+    const hourlyTimes = data.hourly?.time || [];
+    const currentHourIndex = hourlyTimes.findIndex((t) =>
+      t.startsWith(nowHourStr)
+    );
+
+    let currentHourData = {
+      weathercode: 0,
+      conditionText: "Unknown",
+      icon: weatherIcons[0],
+      overlay: overlayVideos["0"],
+      temp_f: null,
+      feelslike_f: null
+    };
+
+    if (currentHourIndex !== -1) {
+      const code = data.hourly.weathercode?.[currentHourIndex] || 0;
+      const tempC = data.hourly.temperature_2m?.[currentHourIndex] || null;
+      const feelsC = data.hourly.apparent_temperature?.[currentHourIndex] || null;
+
+      currentHourData = {
+        weathercode: code,
+        conditionText: weatherCodes[code] || "Unknown",
+        icon: weatherIcons[code] || weatherIcons[0],
+        overlay: overlayVideos[String(code)] || overlayVideos["0"],
+        temp_f:
+          tempC != null ? (tempC * 9/5 + 32).toFixed(1) : null,
+        feelslike_f:
+          feelsC != null ? (feelsC * 9/5 + 32).toFixed(1) : null
+      };
+    }
 
     const hourlyArray = (data.hourly?.time || []).map((h, i) => ({
       hour: h,
-      temp_f: data.hourly.temperature_2m?.[i] != null
-        ? (data.hourly.temperature_2m[i] * 9/5 + 32).toFixed(1)
-        : null,
-      feelslike_f: data.hourly.apparent_temperature?.[i] != null
-        ? (data.hourly.apparent_temperature[i] * 9/5 + 32).toFixed(1)
-        : null,
+      temp_f:
+        data.hourly.temperature_2m?.[i] != null
+          ? (data.hourly.temperature_2m[i] * 9/5 + 32).toFixed(1)
+          : null,
+      feelslike_f:
+        data.hourly.apparent_temperature?.[i] != null
+          ? (data.hourly.apparent_temperature[i] * 9/5 + 32).toFixed(1)
+          : null,
       uv_index: data.hourly.uv_index?.[i] || null,
       cloudcover: data.hourly.cloudcover?.[i] || null,
       precipitation_probability: data.hourly.precipitation_probability?.[i] || null,
-      windgusts_mph: data.hourly.windgusts_10m?.[i] != null
-        ? (data.hourly.windgusts_10m[i] * 0.621371).toFixed(1)
-        : null,
+      windgusts_mph:
+        data.hourly.windgusts_10m?.[i] != null
+          ? (data.hourly.windgusts_10m[i] * 0.621371).toFixed(1)
+          : null,
       weathercode: data.hourly.weathercode?.[i] || null,
       conditionText: weatherCodes[data.hourly.weathercode?.[i]] || null,
       icon: weatherIcons[data.hourly.weathercode?.[i]] || null,
@@ -145,10 +178,7 @@ app.get("/weather", async (req, res) => {
       source: "Open-Meteo",
       lat,
       lon,
-      weathercode: currentCode,
-      conditionText,
-      icon: iconURL,
-      overlay: overlayURL,
+      ...currentHourData,
       hourly: hourlyArray
     });
 
