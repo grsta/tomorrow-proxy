@@ -107,7 +107,7 @@ const overlayVideos = {
   "night_clear": "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752203811/Clear_Night_time_Sky_maywjz.mp4"
 };
 
-// ⭐ Shared logic to get current hour data
+// ⭐ Shared logic for current hour
 async function getCurrentHourData(lat, lon) {
   const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,apparent_temperature,uv_index,cloudcover,precipitation_probability,windgusts_10m,weathercode&current_weather=true&timezone=auto`;
 
@@ -150,7 +150,7 @@ async function getCurrentHourData(lat, lon) {
   return { currentHourData, data };
 }
 
-// ✅ /weather → for hourly data
+// ✅ /weather → for hourly graphs
 app.get("/weather", async (req, res) => {
   try {
     const lat = req.query.lat || "38.9168";
@@ -181,7 +181,7 @@ app.get("/weather", async (req, res) => {
       overlay: overlayVideos[String(data.hourly.weathercode?.[i])] || null
     }));
 
-    res.json([{
+    res.json({
       source: "Open-Meteo",
       lat,
       lon,
@@ -192,7 +192,7 @@ app.get("/weather", async (req, res) => {
     console.error(error.message);
     res.status(500).json({ error: true, message: error.message });
   }
-}]);
+});
 
 // ✅ /weather/current → for single weather card
 app.get("/weather/current", async (req, res) => {
@@ -202,7 +202,8 @@ app.get("/weather/current", async (req, res) => {
 
     const { currentHourData } = await getCurrentHourData(lat, lon);
 
-    res.json(currentHourData);
+    // ✅ Wrap in array so Adalo can import it!
+    res.json([ currentHourData ]);
   } catch (error) {
     console.error(error.message);
     res.status(500).json({ error: true, message: error.message });
