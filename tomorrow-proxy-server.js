@@ -85,7 +85,7 @@ app.get("/weather", async (req, res) => {
     const params = {
       latitude: lat,
       longitude: lon,
-      current: "temperature_2m,apparent_temperature,weather_code,is_day,wind_speed_10m,cloudcover",
+      current_weather: true,
       daily: "sunrise,sunset,moon_phase",
       hourly: "temperature_2m,apparent_temperature,uv_index,cloudcover,precipitation_probability,windgusts_10m",
       timezone: timezone,
@@ -98,11 +98,11 @@ app.get("/weather", async (req, res) => {
 
     const response = await axios.get(url, { params });
 
-    const current = response.data.current;
+    const current = response.data.current_weather;
     const daily = response.data.daily;
     const hourly = response.data.hourly;
 
-    const weatherCode = current.weather_code ?? 0;
+    const weatherCode = current.weathercode ?? 0;
     let iconUrl = weatherVideos[weatherCode] || null;
 
     if (current.is_day === 0 && weatherCode === 0) {
@@ -142,16 +142,16 @@ app.get("/weather", async (req, res) => {
       lon: lon,
       region: "Test Region",
       weather: {
-        temp_f: current.temperature_2m,
-        feelsLike_f: current.apparent_temperature,
-        windSpeed_mph: current.wind_speed_10m,
+        temp_f: current.temperature,
+        feelsLike_f: current.apparent_temperature ?? null,
+        windSpeed_mph: current.windspeed,
         weathercode: weatherCode,
         conditionText: conditionText,
         iconUrl: iconUrl,
         isDay: current.is_day,
-        humidity: 87,
-        precipitation_mm: 2.5,
-        cloudcover_pct: current.cloudcover,
+        humidity: 87, // Dummy value for now
+        precipitation_mm: 2.5, // Dummy value for now
+        cloudcover_pct: hourly?.cloudcover?.[0] || null,
         sunrise: sunrise,
         sunset: sunset,
         moonPhase: moonPhase,
@@ -169,7 +169,6 @@ app.get("/weather", async (req, res) => {
   }
 });
 
-// ✅ ADD THIS TO KEEP SERVER RUNNING!
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
