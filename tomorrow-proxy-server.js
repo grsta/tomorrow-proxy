@@ -135,7 +135,7 @@ app.get("/weather", async (req, res) => {
       alertSender: "NWS Shreveport LA"
     };
 
-    res.json({
+    res.json([{
       source: "Open-Meteo",
       lat: lat,
       lon: lon,
@@ -159,7 +159,7 @@ app.get("/weather", async (req, res) => {
       },
       hourly: hourlyData,
       alert: alert
-    });
+    }]);
 
   } catch (error) {
     console.error("Error fetching weather:", error.message);
