@@ -5,7 +5,6 @@ import cors from "cors";
 const app = express();
 app.use(cors());
 
-// ✅ Weather codes → text
 const weatherCodes = {
   0: "Clear sky",
   1: "Mainly clear",
@@ -37,7 +36,8 @@ const weatherCodes = {
   99: "Thunderstorm with heavy hail"
 };
 
-// ✅ Cloudinary MP4 animated icons (small)
+// 🎥 Your animated icons (black background)
+// (still .mp4 URLs)
 const weatherIcons = {
   0: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Sun_vlifro.mp4",
   1: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Partly_Cloudy_xhcdwf.mp4",
@@ -70,31 +70,31 @@ const weatherIcons = {
   night_clear: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1751686564/Night_hdskkm.mp4"
 };
 
-// ✅ Cloudinary MP4 overlay background videos
-const weatherVideos = {
-  0: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752205058/Sunny_and_Hot_pidmg6.mp4",
-  1: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752203017/clear_skies_azqxco.mp4",
-  2: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752204937/Foggy_Mountains_t3rwn5.mp4",
+// 🎥 Your background overlay videos
+const weatherOverlays = {
+  0: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752203017/clear_skies_azqxco.mp4",
+  1: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752205058/Sunny_and_Hot_pidmg6.mp4",
+  2: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752205058/Sunny_and_Hot_pidmg6.mp4",
   3: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752202716/Rolling_Dark_Stormy_Clouds_fnddfr.mp4",
   45: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752204937/Foggy_Mountains_t3rwn5.mp4",
   48: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752204937/Foggy_Mountains_t3rwn5.mp4",
   51: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752203562/Daytime_Drizzle_cuavcf.mp4",
   53: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752203562/Daytime_Drizzle_cuavcf.mp4",
   55: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752204136/Daytime_Heavy_Rains_vxwtnv.mp4",
-  56: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752203080/Night_time_snow_fgtvdd.mp4",
-  57: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752203080/Night_time_snow_fgtvdd.mp4",
+  56: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752203562/Daytime_Drizzle_cuavcf.mp4",
+  57: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752204136/Daytime_Heavy_Rains_vxwtnv.mp4",
   61: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752203562/Daytime_Drizzle_cuavcf.mp4",
   63: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752204136/Daytime_Heavy_Rains_vxwtnv.mp4",
-  65: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752204136/Daytime_Heavy_Rains_vxwtnv.mp4",
-  66: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752203080/Night_time_snow_fgtvdd.mp4",
-  67: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752203080/Night_time_snow_fgtvdd.mp4",
+  65: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752203288/Zooming_on_Hurricane_kfbnu5.mp4",
+  66: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752203562/Daytime_Drizzle_cuavcf.mp4",
+  67: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752203288/Zooming_on_Hurricane_kfbnu5.mp4",
   71: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752202888/Snow_Fall_xuji5g.mp4",
-  73: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752202888/Snow_Fall_xuji5g.mp4",
+  73: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752203080/Night_time_snow_fgtvdd.mp4",
   75: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752203080/Night_time_snow_fgtvdd.mp4",
   77: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752202888/Snow_Fall_xuji5g.mp4",
-  80: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752203562/Daytime_Drizzle_cuavcf.mp4",
+  80: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752204136/Daytime_Heavy_Rains_vxwtnv.mp4",
   81: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752204136/Daytime_Heavy_Rains_vxwtnv.mp4",
-  82: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752204136/Daytime_Heavy_Rains_vxwtnv.mp4",
+  82: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752203160/Severe_Hurricane_ncauue.mp4",
   85: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752202888/Snow_Fall_xuji5g.mp4",
   86: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752203080/Night_time_snow_fgtvdd.mp4",
   95: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752203432/Lightning_ur7amh.mp4",
@@ -133,36 +133,33 @@ app.get("/weather", async (req, res) => {
     const hourly = response.data.hourly;
 
     const weatherCode = current.weather_code ?? 0;
-    const iconUrl = weatherIcons[weatherCode] || weatherIcons[0];
-    const videoUrl = weatherVideos[weatherCode] || weatherIcons[weatherCode] || weatherIcons[0];
+    let iconUrl = weatherIcons[weatherCode] || null;
+    let overlayUrl = weatherOverlays[weatherCode] || null;
+
+    if (current.is_day === 0 && weatherCode === 0) {
+      iconUrl = weatherIcons["night_clear"];
+      overlayUrl = weatherOverlays["night_clear"];
+    }
 
     const conditionText = weatherCodes[weatherCode] || "Clear sky";
 
-    const sunrise = daily?.sunrise?.[0] || null;
-    const sunset = daily?.sunset?.[0] || null;
+    // ✅ Transform hourly arrays into rows
+    const hourlyRows = [];
+    if (hourly?.time?.length > 0) {
+      for (let i = 0; i < hourly.time.length; i++) {
+        hourlyRows.push({
+          hour: hourly.time[i].split("T")[1]?.substring(0, 5) || null,
+          temp_f: hourly.temperature_2m?.[i] ?? null,
+          feelsLike_f: hourly.apparent_temperature?.[i] ?? null,
+          uvIndex: hourly.uv_index?.[i] ?? null,
+          cloudCover_pct: hourly.cloudcover?.[i] ?? null,
+          precipProb_pct: hourly.precipitation_probability?.[i] ?? null,
+          windGusts_mph: hourly.windgusts_10m?.[i] ?? null
+        });
+      }
+    }
 
-    const hourlyData = {
-      hours: hourly?.time?.map(t => t.split("T")[1].substring(0, 5)) || [],
-      temp_f: hourly?.temperature_2m || [],
-      feelsLike_f: hourly?.apparent_temperature || [],
-      uvIndex: hourly?.uv_index || [],
-      cloudCover_pct: hourly?.cloudcover || [],
-      precipProb_pct: hourly?.precipitation_probability || [],
-      windGusts_mph: hourly?.windgusts_10m || []
-    };
-
-    const alert = {
-      alertActive: true,
-      alertEvent: "Special Weather Statement",
-      alertDescription: "A big storm is coming!",
-      alertInstruction: "Seek shelter indoors immediately.",
-      alertExpires: "2025-07-06T19:45:00-05:00",
-      alertSeverity: "Severe",
-      alertHeadline: "Severe Thunderstorm Warning",
-      alertSender: "NWS Shreveport LA"
-    };
-
-    res.json([{
+    res.json({
       source: "Open-Meteo",
       lat: lat,
       lon: lon,
@@ -174,20 +171,19 @@ app.get("/weather", async (req, res) => {
         weathercode: weatherCode,
         conditionText: conditionText,
         iconUrl: iconUrl,
-        videoUrl: videoUrl,
+        overlayUrl: overlayUrl,
         isDay: current.is_day,
-        humidity: 87,
-        precipitation_mm: 2.5,
+        humidity: 87, // dummy
+        precipitation_mm: 2.5, // dummy
         cloudcover_pct: current.cloudcover,
-        sunrise: sunrise,
-        sunset: sunset,
+        sunrise: daily?.sunrise?.[0] || null,
+        sunset: daily?.sunset?.[0] || null,
         uvIndex: hourly?.uv_index?.[0] || null,
         windGusts_mph: hourly?.windgusts_10m?.[0] || null,
         precipProb_pct: hourly?.precipitation_probability?.[0] || null
       },
-      hourly: hourlyData,
-      alert: alert
-    }]);
+      hourly: hourlyRows
+    });
 
   } catch (error) {
     console.error("Error fetching weather:", error.message);
