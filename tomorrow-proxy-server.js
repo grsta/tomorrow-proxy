@@ -5,7 +5,6 @@ import cors from "cors";
 const app = express();
 app.use(cors());
 
-// ✅ Weather code mapping
 const weatherCodes = {
   0: "Clear sky",
   1: "Mainly clear",
@@ -37,7 +36,6 @@ const weatherCodes = {
   99: "Thunderstorm with heavy hail"
 };
 
-// ✅ Cloudinary videos
 const weatherVideos = {
   0: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Sun_vlifro.mp4",
   1: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Partly_Cloudy_xhcdwf.mp4",
@@ -80,7 +78,7 @@ app.get("/weather", async (req, res) => {
     const lon = req.query.lon || -77.0369;
     const timezone = req.query.timezone || "auto";
 
-    // FIRST CALL → current_weather only
+    // CALL #1 — get current weather
     const currentRes = await axios.get(
       "https://api.open-meteo.com/v1/forecast",
       {
@@ -96,8 +94,8 @@ app.get("/weather", async (req, res) => {
     );
 
     const current = currentRes.data.current_weather;
-
     const weatherCode = current.weathercode ?? 0;
+
     let iconUrl = weatherVideos[weatherCode] || null;
     if (current.is_day === 0 && weatherCode === 0) {
       iconUrl = weatherVideos["night_clear"];
@@ -105,7 +103,7 @@ app.get("/weather", async (req, res) => {
 
     const conditionText = weatherCodes[weatherCode] || "Clear sky";
 
-    // SECOND CALL → daily + hourly
+    // CALL #2 — get daily + hourly
     const forecastRes = await axios.get(
       "https://api.open-meteo.com/v1/forecast",
       {
@@ -130,8 +128,7 @@ app.get("/weather", async (req, res) => {
     const moonPhase = daily?.moon_phase?.[0] || null;
 
     const hourlyData = {
-      hours:
-        hourly?.time?.map((t) => t.split("T")[1].substring(0, 5)) || [],
+      hours: hourly?.time?.map((t) => t.split("T")[1].substring(0, 5)) || [],
       temp_f: hourly?.temperature_2m || [],
       feelsLike_f: hourly?.apparent_temperature || [],
       uvIndex: hourly?.uv_index || [],
@@ -158,7 +155,6 @@ app.get("/weather", async (req, res) => {
       region: "Test Region",
       weather: {
         temp_f: current.temperature,
-        feelsLike_f: current.apparent_temperature ?? null,
         windSpeed_mph: current.windspeed,
         weathercode: weatherCode,
         conditionText: conditionText,
@@ -179,9 +175,9 @@ app.get("/weather", async (req, res) => {
     });
   } catch (err) {
     console.error("Error fetching weather:", err.message);
-    res
-      .status(500)
-      .json({ error: "Failed to fetch weather data. " + err.message });
+    res.status(500).json({
+      error: "Failed to fetch weather data. " + err.message
+    });
   }
 });
 
