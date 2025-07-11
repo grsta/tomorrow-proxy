@@ -1,13 +1,15 @@
 {
-  "name": "tomorrow-proxy",
+  "name": "swole-weather-backend",
   "version": "1.0.0",
-  "type": "module",
+  "description": "Backend proxy server for weather data and Cloudinary mapping.",
+  "main": "tomorrow-proxy-server.js",
   "scripts": {
     "start": "node tomorrow-proxy-server.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "axios": "^1.6.8",
-    "cors": "^2.8.5"
+    "axios": "^1.6.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2"
   }
 }
+
