@@ -107,49 +107,56 @@ const overlayVideos = {
   "night_clear": "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752203811/Clear_Night_time_Sky_maywjz.mp4"
 };
 
+// ⭐ Shared logic to get current hour data
+async function getCurrentHourData(lat, lon) {
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,apparent_temperature,uv_index,cloudcover,precipitation_probability,windgusts_10m,weathercode&current_weather=true&timezone=auto`;
+
+  const { data } = await axios.get(url);
+
+  const now = new Date();
+  const nowHourStr = now.toISOString().slice(0, 13);
+
+  const hourlyTimes = data.hourly?.time || [];
+  const currentHourIndex = hourlyTimes.findIndex((t) =>
+    t.startsWith(nowHourStr)
+  );
+
+  let currentHourData = {
+    weathercode: 0,
+    conditionText: "Unknown",
+    icon: weatherIcons[0],
+    overlay: overlayVideos["0"],
+    temp_f: null,
+    feelslike_f: null
+  };
+
+  if (currentHourIndex !== -1) {
+    const code = data.hourly.weathercode?.[currentHourIndex] || 0;
+    const tempC = data.hourly.temperature_2m?.[currentHourIndex] || null;
+    const feelsC = data.hourly.apparent_temperature?.[currentHourIndex] || null;
+
+    currentHourData = {
+      weathercode: code,
+      conditionText: weatherCodes[code] || "Unknown",
+      icon: weatherIcons[code] || weatherIcons[0],
+      overlay: overlayVideos[String(code)] || overlayVideos["0"],
+      temp_f:
+        tempC != null ? (tempC * 9/5 + 32).toFixed(1) : null,
+      feelslike_f:
+        feelsC != null ? (feelsC * 9/5 + 32).toFixed(1) : null
+    };
+  }
+
+  return { currentHourData, data };
+}
+
+// ✅ /weather → for hourly data
 app.get("/weather", async (req, res) => {
   try {
     const lat = req.query.lat || "38.9168";
     const lon = req.query.lon || "-77.0195";
 
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,apparent_temperature,uv_index,cloudcover,precipitation_probability,windgusts_10m,weathercode&current_weather=true&timezone=auto`;
-
-    const { data } = await axios.get(url);
-
-    // Find current hour in hourly forecast
-    const now = new Date();
-    const nowHourStr = now.toISOString().slice(0, 13);
-
-    const hourlyTimes = data.hourly?.time || [];
-    const currentHourIndex = hourlyTimes.findIndex((t) =>
-      t.startsWith(nowHourStr)
-    );
-
-    let currentHourData = {
-      weathercode: 0,
-      conditionText: "Unknown",
-      icon: weatherIcons[0],
-      overlay: overlayVideos["0"],
-      temp_f: null,
-      feelslike_f: null
-    };
-
-    if (currentHourIndex !== -1) {
-      const code = data.hourly.weathercode?.[currentHourIndex] || 0;
-      const tempC = data.hourly.temperature_2m?.[currentHourIndex] || null;
-      const feelsC = data.hourly.apparent_temperature?.[currentHourIndex] || null;
-
-      currentHourData = {
-        weathercode: code,
-        conditionText: weatherCodes[code] || "Unknown",
-        icon: weatherIcons[code] || weatherIcons[0],
-        overlay: overlayVideos[String(code)] || overlayVideos["0"],
-        temp_f:
-          tempC != null ? (tempC * 9/5 + 32).toFixed(1) : null,
-        feelslike_f:
-          feelsC != null ? (feelsC * 9/5 + 32).toFixed(1) : null
-      };
-    }
+    const { currentHourData, data } = await getCurrentHourData(lat, lon);
 
     const hourlyArray = (data.hourly?.time || []).map((h, i) => ({
       hour: h,
@@ -181,7 +188,21 @@ app.get("/weather", async (req, res) => {
       ...currentHourData,
       hourly: hourlyArray
     });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ error: true, message: error.message });
+  }
+});
 
+// ✅ /weather/current → for single weather card
+app.get("/weather/current", async (req, res) => {
+  try {
+    const lat = req.query.lat || "38.9168";
+    const lon = req.query.lon || "-77.0195";
+
+    const { currentHourData } = await getCurrentHourData(lat, lon);
+
+    res.json(currentHourData);
   } catch (error) {
     console.error(error.message);
     res.status(500).json({ error: true, message: error.message });
