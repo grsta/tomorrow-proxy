@@ -181,7 +181,7 @@ app.get("/weather", async (req, res) => {
       overlay: overlayVideos[String(data.hourly.weathercode?.[i])] || null
     }));
 
-    res.json({
+    res.json([{
       source: "Open-Meteo",
       lat,
       lon,
@@ -192,7 +192,7 @@ app.get("/weather", async (req, res) => {
     console.error(error.message);
     res.status(500).json({ error: true, message: error.message });
   }
-});
+}]);
 
 // ✅ /weather/current → for single weather card
 app.get("/weather/current", async (req, res) => {
