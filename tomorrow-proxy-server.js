@@ -87,7 +87,7 @@ app.get("/weather", async (req, res) => {
       longitude: lon,
       current: "temperature_2m,apparent_temperature,weather_code,is_day,wind_speed_10m,cloudcover",
       daily: "sunrise,sunset,moon_phase",
-      hourly: "temperature_2m,apparent_temperature,uv_index,cloudcover,precipitation_probability,wind_gusts_10m",
+      hourly: "temperature_2m,apparent_temperature,uv_index,cloudcover,precipitation_probability,windgusts_10m",
       timezone: timezone,
       temperature_unit: "fahrenheit",
       wind_speed_unit: "mph"
@@ -122,7 +122,7 @@ app.get("/weather", async (req, res) => {
       uvIndex: hourly?.uv_index || [],
       cloudCover_pct: hourly?.cloudcover || [],
       precipProb_pct: hourly?.precipitation_probability || [],
-      windGusts_mph: hourly?.wind_gusts_10m || []
+      windGusts_mph: hourly?.windgusts_10m || []
     };
 
     const alert = {
@@ -136,7 +136,7 @@ app.get("/weather", async (req, res) => {
       alertSender: "NWS Shreveport LA"
     };
 
-    res.json({
+    res.status(200).json({
       source: "Open-Meteo",
       lat: lat,
       lon: lon,
@@ -149,14 +149,14 @@ app.get("/weather", async (req, res) => {
         conditionText: conditionText,
         iconUrl: iconUrl,
         isDay: current.is_day,
-        humidity: 87, // Dummy for now
-        precipitation_mm: 2.5, // Dummy for now
+        humidity: 87,
+        precipitation_mm: 2.5,
         cloudcover_pct: current.cloudcover,
         sunrise: sunrise,
         sunset: sunset,
         moonPhase: moonPhase,
         uvIndex: hourly?.uv_index?.[0] || null,
-        windGusts_mph: hourly?.wind_gusts_10m?.[0] || null,
+        windGusts_mph: hourly?.windgusts_10m?.[0] || null,
         precipProb_pct: hourly?.precipitation_probability?.[0] || null
       },
       hourly: hourlyData,
@@ -167,4 +167,10 @@ app.get("/weather", async (req, res) => {
     console.error("Error fetching weather:", error.message);
     res.status(500).json({ error: "Failed to fetch weather data." });
   }
+});
+
+// ✅ ADD THIS TO KEEP SERVER RUNNING!
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
