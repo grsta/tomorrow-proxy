@@ -1,15 +1,13 @@
 {
   "name": "tomorrow-proxy",
   "version": "1.0.0",
-  "main": "tomorrow-proxy-server.js",
+  "type": "module",
   "scripts": {
     "start": "node tomorrow-proxy-server.js"
   },
   "dependencies": {
-    "axios": "^1.4.0",
-    "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
     "express": "^4.18.2",
-    "node-fetch": "^3.3.2"
+    "axios": "^1.6.8",
+    "cors": "^2.8.5"
   }
 }
