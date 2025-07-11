@@ -5,7 +5,7 @@ import cors from "cors";
 const app = express();
 app.use(cors());
 
-// ✅ FULL weatherCodes mapping
+// ✅ FULL Weather code mappings
 const weatherCodes = {
   0: "Clear sky",
   1: "Mainly clear",
@@ -48,12 +48,12 @@ const weatherVideos = {
   51: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Light_Rain_azdyyv.mp4",
   53: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Light_Rain_azdyyv.mp4",
   55: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Rain_Shower_j5qs3f.mp4",
-  56: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Rain_Shower_j5qs3f.mp4",
+  56: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Light_Rain_azdyyv.mp4",
   57: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Rain_Shower_j5qs3f.mp4",
   61: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Light_Rain_azdyyv.mp4",
   63: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Rain_Shower_j5qs3f.mp4",
   65: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Rain_I_qijqzs.mp4",
-  66: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Rain_Shower_j5qs3f.mp4",
+  66: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Light_Rain_azdyyv.mp4",
   67: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Rain_I_qijqzs.mp4",
   71: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Light_Snow_gswdxh.mp4",
   73: "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1750226637/Snow_apib0s.mp4",
@@ -85,7 +85,9 @@ app.get("/weather", async (req, res) => {
     const params = {
       latitude: lat,
       longitude: lon,
-      current: "temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,is_day,wind_speed_10m",
+      current: "temperature_2m,apparent_temperature,weather_code,is_day,wind_speed_10m,cloudcover",
+      daily: "sunrise,sunset,moon_phase",
+      hourly: "temperature_2m,apparent_temperature,uv_index,cloudcover,precipitation_probability,windgusts_10m",
       timezone: timezone,
       temperature_unit: "fahrenheit",
       wind_speed_unit: "mph"
@@ -95,22 +97,34 @@ app.get("/weather", async (req, res) => {
     console.log("Params:", params);
 
     const response = await axios.get(url, { params });
-    const weather = response.data.current;
 
-    const weatherCode = weather.weather_code ?? 0;
+    const current = response.data.current;
+    const daily = response.data.daily;
+    const hourly = response.data.hourly;
+
+    const weatherCode = current.weather_code ?? 0;
     let iconUrl = weatherVideos[weatherCode] || null;
 
-    if (weather.is_day === 0) {
-      if (weatherCode === 0) {
-        iconUrl = weatherVideos["night_clear"];
-      } else {
-        iconUrl = weatherVideos[weatherCode] || null;
-      }
+    if (current.is_day === 0 && weatherCode === 0) {
+      iconUrl = weatherVideos["night_clear"];
     }
 
     const conditionText = weatherCodes[weatherCode] || "Clear sky";
 
-    // ✅ Dummy alert object for testing in Adalo
+    const sunrise = daily?.sunrise?.[0] || null;
+    const sunset = daily?.sunset?.[0] || null;
+    const moonPhase = daily?.moon_phase?.[0] || null;
+
+    const hourlyData = {
+      hours: hourly?.time?.map(t => t.split("T")[1].substring(0,5)) || [],
+      temp_f: hourly?.temperature_2m || [],
+      feelsLike_f: hourly?.apparent_temperature || [],
+      uvIndex: hourly?.uv_index || [],
+      cloudCover_pct: hourly?.cloudcover || [],
+      precipProb_pct: hourly?.precipitation_probability || [],
+      windGusts_mph: hourly?.windgusts_10m || []
+    };
+
     const alert = {
       alertActive: true,
       alertEvent: "Special Weather Statement",
@@ -122,29 +136,31 @@ app.get("/weather", async (req, res) => {
       alertSender: "NWS Shreveport LA"
     };
 
-    // ✅ RETURN DATA AS ARRAY!
     res.json({
-      data: [
-        {
-          source: "Dummy Test Data",
-          lat: lat,
-          lon: lon,
-          region: "Test Region",
-          weather: {
-            temp_f: 79.9,
-            feelsLike_f: 79.9,
-            windSpeed_mph: 7.1,
-            weathercode: weatherCode,
-            conditionText: conditionText,
-            iconUrl: iconUrl,
-            isDay: weather.is_day,
-            humidity: 87,
-            precipitation_mm: 2.5,
-            cloudcover_pct: 65
-          },
-          alert: alert
-        }
-      ]
+      source: "Open-Meteo",
+      lat: lat,
+      lon: lon,
+      region: "Test Region",
+      weather: {
+        temp_f: current.temperature_2m,
+        feelsLike_f: current.apparent_temperature,
+        windSpeed_mph: current.wind_speed_10m,
+        weathercode: weatherCode,
+        conditionText: conditionText,
+        iconUrl: iconUrl,
+        isDay: current.is_day,
+        humidity: 87, // Dummy for now
+        precipitation_mm: 2.5, // Dummy for now
+        cloudcover_pct: current.cloudcover,
+        sunrise: sunrise,
+        sunset: sunset,
+        moonPhase: moonPhase,
+        uvIndex: hourly?.uv_index?.[0] || null,
+        windGusts_mph: hourly?.windgusts_10m?.[0] || null,
+        precipProb_pct: hourly?.precipitation_probability?.[0] || null
+      },
+      hourly: hourlyData,
+      alert: alert
     });
 
   } catch (error) {
