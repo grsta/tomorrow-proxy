@@ -166,20 +166,24 @@ app.get("/weather", async (req, res) => {
     }));
 
     res.json({
-      source: "Open-Meteo",
-      lat,
-      lon,
-      weathercode: currentCode,
-      conditionText,
-      icon: iconURL,
-      overlay: overlayURL,
-      temp_f: currentTempF,
-      feelslike_f: feelslikeTempF,
-      windspeed_mph: windSpeedMph,
-      winddirection: windDirection,
-      cloudcover,
-      precipitation_probability: precipitationProbability,
-      uv_index: uvIndex,
+      current_weather: [
+        {
+          source: "Open-Meteo",
+          lat,
+          lon,
+          weathercode: currentCode,
+          conditionText,
+          icon: iconURL,
+          overlay: overlayURL,
+          temp_f: currentTempF,
+          feelslike_f: feelslikeTempF,
+          windspeed_mph: windSpeedMph,
+          winddirection: windDirection,
+          cloudcover,
+          precipitation_probability: precipitationProbability,
+          uv_index: uvIndex
+        }
+      ],
       hourly: hourlyArray
     });
 
