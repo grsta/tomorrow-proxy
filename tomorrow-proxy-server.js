@@ -127,7 +127,8 @@ async function getCurrentHourData(lat, lon) {
     icon: weatherIcons[0],
     overlay: overlayVideos["0"],
     temp_f: null,
-    feelslike_f: null
+    feelslike_f: null,
+    is_day: 1
   };
 
   if (currentHourIndex !== -1) {
@@ -135,15 +136,19 @@ async function getCurrentHourData(lat, lon) {
     const tempC = data.hourly.temperature_2m?.[currentHourIndex] || null;
     const feelsC = data.hourly.apparent_temperature?.[currentHourIndex] || null;
 
+    const isDay = data.current_weather?.is_day === 1;
+
+    const iconKey = isDay ? code : "night_clear";
+    const overlayKey = isDay ? String(code) : "night_clear";
+
     currentHourData = {
       weathercode: code,
       conditionText: weatherCodes[code] || "Unknown",
-      icon: weatherIcons[code] || weatherIcons[0],
-      overlay: overlayVideos[String(code)] || overlayVideos["0"],
-      temp_f:
-        tempC != null ? (tempC * 9/5 + 32).toFixed(1) : null,
-      feelslike_f:
-        feelsC != null ? (feelsC * 9/5 + 32).toFixed(1) : null
+      icon: weatherIcons[iconKey] || weatherIcons[0],
+      overlay: overlayVideos[overlayKey] || overlayVideos["0"],
+      temp_f: tempC != null ? (tempC * 9/5 + 32).toFixed(1) : null,
+      feelslike_f: feelsC != null ? (feelsC * 9/5 + 32).toFixed(1) : null,
+      is_day: isDay ? 1 : 0
     };
   }
 
@@ -202,7 +207,6 @@ app.get("/weather/current", async (req, res) => {
 
     const { currentHourData } = await getCurrentHourData(lat, lon);
 
-    // ✅ Wrap in array so Adalo can import it!
     res.json([ currentHourData ]);
   } catch (error) {
     console.error(error.message);
