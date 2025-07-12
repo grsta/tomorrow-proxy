@@ -107,79 +107,58 @@ const overlayVideos = {
   "night_clear": "https://res.cloudinary.com/dqfoiq9zh/video/upload/v1752203811/Clear_Night_time_Sky_maywjz.mp4"
 };
 
-// ⭐ Shared logic for current hour
-async function getCurrentHourData(lat, lon) {
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,apparent_temperature,uv_index,cloudcover,precipitation_probability,windgusts_10m,weathercode&current_weather=true&timezone=auto`;
-
-  const { data } = await axios.get(url);
-
-  const now = new Date();
-  const nowHourStr = now.toISOString().slice(0, 13);
-
-  const hourlyTimes = data.hourly?.time || [];
-  const currentHourIndex = hourlyTimes.findIndex((t) =>
-    t.startsWith(nowHourStr)
-  );
-
-  let currentHourData = {
-    weathercode: 0,
-    conditionText: "Unknown",
-    icon: weatherIcons[0],
-    overlay: overlayVideos["0"],
-    temp_f: null,
-    feelslike_f: null,
-    is_day: 1
-  };
-
-  if (currentHourIndex !== -1) {
-    const code = data.hourly.weathercode?.[currentHourIndex] || 0;
-    const tempC = data.hourly.temperature_2m?.[currentHourIndex] || null;
-    const feelsC = data.hourly.apparent_temperature?.[currentHourIndex] || null;
-
-    const isDay = data.current_weather?.is_day === 1;
-
-    const iconKey = isDay ? code : "night_clear";
-    const overlayKey = isDay ? String(code) : "night_clear";
-
-    currentHourData = {
-      weathercode: code,
-      conditionText: weatherCodes[code] || "Unknown",
-      icon: weatherIcons[iconKey] || weatherIcons[0],
-      overlay: overlayVideos[overlayKey] || overlayVideos["0"],
-      temp_f: tempC != null ? (tempC * 9/5 + 32).toFixed(1) : null,
-      feelslike_f: feelsC != null ? (feelsC * 9/5 + 32).toFixed(1) : null,
-      is_day: isDay ? 1 : 0
-    };
-  }
-
-  return { currentHourData, data };
-}
-
-// ✅ /weather → for hourly graphs
 app.get("/weather", async (req, res) => {
   try {
     const lat = req.query.lat || "38.9168";
     const lon = req.query.lon || "-77.0195";
 
-    const { currentHourData, data } = await getCurrentHourData(lat, lon);
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,apparent_temperature,uv_index,cloudcover,precipitation_probability,windgusts_10m,windspeed_10m,winddirection_10m,weathercode&current_weather=true&timezone=auto`;
+
+    const { data } = await axios.get(url);
+
+    const currentCode = data.current_weather?.weathercode || 0;
+    const currentTempF = data.current_weather?.temperature
+      ? (data.current_weather.temperature * 9/5 + 32).toFixed(1)
+      : null;
+
+    const feelslikeTempF = data.hourly?.apparent_temperature?.[0] != null
+      ? (data.hourly.apparent_temperature[0] * 9/5 + 32).toFixed(1)
+      : null;
+
+    const windSpeedMph = data.current_weather?.windspeed
+      ? (data.current_weather.windspeed * 0.621371).toFixed(1)
+      : null;
+
+    function degreesToDirection(degrees) {
+      if (degrees === null) return null;
+      const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW', 'N'];
+      return directions[Math.round(degrees / 45) % 8];
+    }
+
+    const windDirection = degreesToDirection(data.current_weather?.winddirection);
+
+    const cloudcover = data.hourly?.cloudcover?.[0] || null;
+    const precipitationProbability = data.hourly?.precipitation_probability?.[0] || null;
+    const uvIndex = data.hourly?.uv_index?.[0] || null;
+
+    const conditionText = weatherCodes[currentCode] || "Unknown";
+    const iconURL = weatherIcons[currentCode] || weatherIcons[0];
+    const overlayURL = overlayVideos[String(currentCode)] || overlayVideos["0"];
 
     const hourlyArray = (data.hourly?.time || []).map((h, i) => ({
       hour: h,
-      temp_f:
-        data.hourly.temperature_2m?.[i] != null
-          ? (data.hourly.temperature_2m[i] * 9/5 + 32).toFixed(1)
-          : null,
-      feelslike_f:
-        data.hourly.apparent_temperature?.[i] != null
-          ? (data.hourly.apparent_temperature[i] * 9/5 + 32).toFixed(1)
-          : null,
+      temp_f: data.hourly.temperature_2m?.[i] != null
+        ? (data.hourly.temperature_2m[i] * 9/5 + 32).toFixed(1)
+        : null,
+      feelslike_f: data.hourly.apparent_temperature?.[i] != null
+        ? (data.hourly.apparent_temperature[i] * 9/5 + 32).toFixed(1)
+        : null,
       uv_index: data.hourly.uv_index?.[i] || null,
       cloudcover: data.hourly.cloudcover?.[i] || null,
       precipitation_probability: data.hourly.precipitation_probability?.[i] || null,
-      windgusts_mph:
-        data.hourly.windgusts_10m?.[i] != null
-          ? (data.hourly.windgusts_10m[i] * 0.621371).toFixed(1)
-          : null,
+      windgusts_mph: data.hourly.windgusts_10m?.[i] != null
+        ? (data.hourly.windgusts_10m[i] * 0.621371).toFixed(1)
+        : null,
       weathercode: data.hourly.weathercode?.[i] || null,
       conditionText: weatherCodes[data.hourly.weathercode?.[i]] || null,
       icon: weatherIcons[data.hourly.weathercode?.[i]] || null,
@@ -190,24 +169,20 @@ app.get("/weather", async (req, res) => {
       source: "Open-Meteo",
       lat,
       lon,
-      ...currentHourData,
+      weathercode: currentCode,
+      conditionText,
+      icon: iconURL,
+      overlay: overlayURL,
+      temp_f: currentTempF,
+      feelslike_f: feelslikeTempF,
+      windspeed_mph: windSpeedMph,
+      winddirection: windDirection,
+      cloudcover,
+      precipitation_probability: precipitationProbability,
+      uv_index: uvIndex,
       hourly: hourlyArray
     });
-  } catch (error) {
-    console.error(error.message);
-    res.status(500).json({ error: true, message: error.message });
-  }
-});
 
-// ✅ /weather/current → for single weather card
-app.get("/weather/current", async (req, res) => {
-  try {
-    const lat = req.query.lat || "38.9168";
-    const lon = req.query.lon || "-77.0195";
-
-    const { currentHourData } = await getCurrentHourData(lat, lon);
-
-    res.json([ currentHourData ]);
   } catch (error) {
     console.error(error.message);
     res.status(500).json({ error: true, message: error.message });
